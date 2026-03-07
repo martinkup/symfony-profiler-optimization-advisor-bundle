@@ -1,0 +1,2306 @@
+{% extends '@WebProfiler/Profiler/layout.html.twig' %}
+
+{% block head %}
+    {{ parent() }}
+    <style>
+        .oa-card {
+            border: 1px solid var(--table-border-color);
+            border-radius: 6px;
+            padding: 12px 16px;
+            margin-bottom: 12px;
+        }
+        .oa-card-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .oa-card-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin: 0;
+        }
+        .oa-card-why {
+            color: var(--color-muted);
+            font-size: 13px;
+            margin: 4px 0 0;
+        }
+        .oa-card-detail {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid var(--table-border-color);
+        }
+        .oa-card-detail ul {
+            margin: 4px 0 0;
+            padding-left: 20px;
+        }
+        .oa-card-detail li {
+            font-size: 13px;
+            padding: 2px 0;
+        }
+
+        .oa-highlight-row {
+            background: var(--badge-warning-background);
+        }
+
+        .oa-kpi-row {
+            margin-bottom: 20px;
+        }
+
+        .oa-section {
+            margin-top: 24px;
+        }
+        .oa-section-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid var(--table-border-color);
+        }
+
+        .oa-safety {
+            font-size: 12px;
+            color: var(--color-muted);
+            font-style: italic;
+            margin-top: 6px;
+        }
+
+        .oa-expand-toggle {
+            cursor: pointer;
+            color: var(--color-link);
+            font-size: 12px;
+        }
+
+        .oa-export-pre {
+            max-height: 500px;
+            max-width: 0;
+            min-width: 100%;
+            box-sizing: border-box;
+            overflow: auto;
+            font-size: 12px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            margin: 0;
+            padding: 0;
+            background: none;
+        }
+        .oa-export-block {
+            display: flex;
+            flex-direction: column;
+            background: var(--base-1);
+            margin: .5em 0;
+            padding: 1em;
+        }
+        .oa-export-block > .btn { align-self: end; margin-top: 8px; }
+
+        .oa-not-called {
+            color: var(--color-muted);
+            font-style: italic;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        .oa-time-bar {
+            display: flex;
+            height: 20px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 12px 0 8px;
+            border: 1px solid var(--table-border-color);
+        }
+        .oa-time-bar-segment {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            color: #fff;
+            min-width: 0;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .oa-time-bar-legend {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            margin-bottom: 16px;
+        }
+        .oa-time-bar-legend span::before {
+            content: '';
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            margin-right: 4px;
+            vertical-align: middle;
+        }
+        .oa-seg-db { background: #3b82f6; }
+        .oa-seg-twig { background: #8b5cf6; }
+        .oa-seg-http { background: #f59e0b; }
+        .oa-seg-messenger { background: #10b981; }
+        .oa-legend-db::before { background: #3b82f6; }
+        .oa-legend-twig::before { background: #8b5cf6; }
+        .oa-legend-http::before { background: #f59e0b; }
+        .oa-legend-messenger::before { background: #10b981; }
+
+        .oa-opps-table tr.sf-toggle-content.sf-toggle-visible { display: table-row; }
+        .oa-opps-table .sf-toggle-content > td { padding: 0; overflow: hidden; max-width: 0; }
+        .oa-opps-table { width: 100%; table-layout: fixed; }
+        .oa-opps-table th:nth-child(1) { width: 36px; }
+        .oa-opps-table th:nth-child(2) { width: 56px; }
+        .oa-opps-table th:nth-child(4) { width: 100px; }
+        .oa-opps-table th:nth-child(5),
+        .oa-opps-table th:nth-child(6),
+        .oa-opps-table th:nth-child(7),
+        .oa-opps-table th:nth-child(8) { width: 60px; }
+        .oa-opps-table .btn-link { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+        .oa-opps-table .sf-toggle-content table { border: 0; box-shadow: none; font-size: 13px; margin: 0; }
+        .oa-opps-table .sf-toggle-content table th { border: 0; border-bottom: 1px solid var(--table-border-color); white-space: nowrap; }
+        .oa-opps-table .sf-toggle-content table td { border: 0; border-bottom: 1px solid var(--table-border-color); }
+        .oa-opps-table .sf-toggle-content table tr:last-child th,
+        .oa-opps-table .sf-toggle-content table tr:last-child td { border-bottom: 0; }
+
+        .oa-db-table { width: 100%; table-layout: fixed; }
+        .oa-db-table tr.sf-toggle-content.sf-toggle-visible { display: table-row; }
+        .oa-db-table .sf-toggle-content > td { padding: 0; overflow: hidden; max-width: 0; }
+
+        .oa-sql-detail-cell { border-bottom: 0 !important; padding: 10px !important; }
+
+        .oa-data-row > td { border: 0 !important; border-top: 1px solid var(--table-border-color) !important; padding-top: 18px !important; padding-bottom: 10px !important; }
+        .oa-detail-row > td { border: 0 !important; border-bottom: 1px solid var(--table-border-color) !important; padding-top: 6px !important; }
+        .oa-detail-label { display: block; font-size: 11px; color: var(--color-muted); margin-bottom: 2px; }
+        .oa-code-block.sf-toggle-content.sf-toggle-visible { display: flex; flex-direction: column; }
+        .oa-code-block button { align-self: end; }
+        .oa-sql-toggles { font-size: 12px; padding: 2px 0 4px; }
+        .oa-sql-toggles a { margin-right: 12px; }
+        .oa-conn-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; line-height: 1.4; }
+        .oa-conn-default { background: var(--badge-success-background, #dcfce7); color: var(--badge-success-color, #166534); }
+        .oa-conn-alt { background: var(--badge-info-background, #dbeafe); color: var(--badge-info-color, #1e40af); }
+        .oa-db-table pre.highlight { margin: 0; padding: 0; background: none; font-size: 12px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+        .highlight .keyword   { color: var(--highlight-keyword); font-weight: bold; }
+        .highlight .word      { color: var(--color-text); }
+        .highlight .variable  { color: var(--highlight-variable); }
+        .highlight .symbol    { color: var(--color-text); }
+        .highlight .comment   { color: var(--highlight-comment); }
+        .highlight .string    { color: var(--highlight-string); }
+        .highlight .number    { color: var(--highlight-constant); font-weight: bold; }
+        .highlight .error     { color: var(--highlight-error); }
+
+        .oa-example-sql {
+            font-family: var(--font-family-monospace);
+            font-size: 12px;
+            background: var(--code-block-background);
+            color: var(--color-text);
+            padding: 8px 12px;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 300px;
+            overflow: auto;
+            margin: 0;
+            box-sizing: border-box;
+            max-width: 0;
+            min-width: 100%;
+        }
+
+        .oa-callgraph-wrap {
+            overflow-x: auto;
+            margin-top: 16px;
+        }
+
+        .oa-cat-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 500; line-height: 1.4; color: #fff; }
+        .oa-cat-default { background: #737373; }
+        .oa-cat-section { background: #a3a3a3; }
+        .oa-cat-event_listener { background: #54aeff; }
+        .oa-cat-template { background: #4ac26b; }
+        .oa-cat-doctrine { background: #fd8c73; }
+        .oa-cat-messenger_middleware { background: #ff8182; }
+        .oa-cat-controller { background: #c297ff; }
+        .oa-cat-http_client { background: #d4a72c; }
+        .oa-cat-security { background: #e8913a; }
+        .oa-cat-unknown { background: #a3a3a3; }
+
+        /* Column alignment: right for numbers, center for badges */
+        .oa-qw-table th:nth-child(2), .oa-qw-table td:nth-child(2),
+        .oa-qw-table th:nth-child(3), .oa-qw-table td:nth-child(3) { text-align: center; }
+        .oa-risky-table th:nth-child(2), .oa-risky-table td:nth-child(2) { text-align: center; }
+        .oa-risky-table th:nth-child(3), .oa-risky-table td:nth-child(3) { text-align: right; }
+        .oa-opps-table > thead th:nth-child(1),
+        .oa-opps-table > tbody > tr:not(.sf-toggle-content) > td:nth-child(1) { text-align: right; }
+        .oa-opps-table > thead th:nth-child(2), .oa-opps-table > tbody > tr:not(.sf-toggle-content) > td:nth-child(2),
+        .oa-opps-table > thead th:nth-child(4), .oa-opps-table > tbody > tr:not(.sf-toggle-content) > td:nth-child(4),
+        .oa-opps-table > thead th:nth-child(8), .oa-opps-table > tbody > tr:not(.sf-toggle-content) > td:nth-child(8) { text-align: center; }
+        .oa-opps-table > thead th:nth-child(5), .oa-opps-table > tbody > tr:not(.sf-toggle-content) > td:nth-child(5),
+        .oa-opps-table > thead th:nth-child(6), .oa-opps-table > tbody > tr:not(.sf-toggle-content) > td:nth-child(6),
+        .oa-opps-table > thead th:nth-child(7), .oa-opps-table > tbody > tr:not(.sf-toggle-content) > td:nth-child(7) { text-align: right; }
+        .oa-db-table > thead th:nth-child(n+3),
+        .oa-db-table .oa-data-row td:nth-child(n+3) { text-align: right; white-space: nowrap; }
+        .oa-cache-table th:nth-child(n+2),
+        .oa-cache-table td:nth-child(n+2) { text-align: right; white-space: nowrap; }
+        .oa-twig-table th:nth-child(n+2),
+        .oa-twig-table td:nth-child(n+2) { text-align: right; white-space: nowrap; }
+        .oa-perf-top3 th:nth-child(1), .oa-perf-top3 td:nth-child(1),
+        .oa-perf-top3 th:nth-child(3), .oa-perf-top3 td:nth-child(3) { text-align: right; }
+        .oa-perf-table th:nth-child(1), .oa-perf-table td:nth-child(1) { text-align: right; }
+        .oa-perf-table th:nth-child(n+3),
+        .oa-perf-table td:nth-child(n+3) { text-align: right; white-space: nowrap; }
+        .oa-ev-table th:nth-child(n+3),
+        .oa-ev-table td:nth-child(n+3) { text-align: right; white-space: nowrap; }
+        .oa-http-table th:nth-child(4), .oa-http-table td:nth-child(4),
+        .oa-http-table th:nth-child(5), .oa-http-table td:nth-child(5),
+        .oa-http-table th:nth-child(6), .oa-http-table td:nth-child(6) { text-align: right; white-space: nowrap; }
+        .oa-http-table th:nth-child(7), .oa-http-table td:nth-child(7) { text-align: center; }
+        .oa-msg-table th:nth-child(3),
+        .oa-msg-table td:nth-child(3) { text-align: right; white-space: nowrap; }
+    </style>
+{% endblock %}
+
+{% block toolbar %}
+    {% set summary = collector.summary %}
+    {% set opp_count = summary.opportunity_count|default(0) %}
+    {% set hs = summary.optimization_score|default(100) %}
+    {% set has_signals = collector.dbSignals or collector.cacheSignals
+        or collector.twigSignals or collector.eventSignals %}
+
+    {% if opp_count > 0 or has_signals %}
+        {% if hs < 50 or summary.high_impact_count|default(0) > 0 %}
+            {% set status_color = 'red' %}
+        {% elseif hs < 80 or opp_count > 0 %}
+            {% set status_color = 'yellow' %}
+        {% else %}
+            {% set status_color = '' %}
+        {% endif %}
+
+        {% set icon %}
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.5" stroke-linecap="round"
+                 stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>
+                <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>
+                <path d="M13.41 10.59l2.59 -2.59"/>
+                <path d="M7 12a5 5 0 0 1 5 -5"/>
+            </svg>
+            <span class="sf-toolbar-value">{{ hs }}</span>
+            <span class="sf-toolbar-label">%</span>
+        {% endset %}
+
+        {% set text %}
+            <div class="sf-toolbar-info-piece">
+                <b>Optimization Score</b>
+                <span class="sf-toolbar-status sf-toolbar-status-{{ hs >= 80 ? 'green' : (hs >= 50 ? 'yellow' : 'red') }}">
+                    {{ hs }} / 100
+                </span>
+            </div>
+            <div class="sf-toolbar-info-piece">
+                <b>Opportunities</b>
+                <span class="sf-toolbar-status {{ opp_count > 0 ? 'sf-toolbar-status-yellow' }}">
+                    {{ opp_count }}
+                </span>
+            </div>
+            <div class="sf-toolbar-info-piece">
+                <b>Quick Wins</b>
+                <span>{{ summary.quick_win_count|default(0) }}</span>
+            </div>
+            <div class="sf-toolbar-info-piece">
+                <b>High Impact</b>
+                <span class="{{ summary.high_impact_count|default(0) > 0 ? 'sf-toolbar-status sf-toolbar-status-red' }}">
+                    {{ summary.high_impact_count|default(0) }}
+                </span>
+            </div>
+            <div class="sf-toolbar-info-piece">
+                <b>DB</b>
+                <span>{{ '%0.2f'|format(summary.total_db_ms|default(0)) }} ms</span>
+            </div>
+            <div class="sf-toolbar-info-piece">
+                <b>Twig</b>
+                <span>{{ '%0.2f'|format(summary.total_twig_ms|default(0)) }} ms</span>
+            </div>
+            {% if summary.total_http_ms|default(0) > 0 %}
+                <div class="sf-toolbar-info-piece">
+                    <b>HTTP</b>
+                    <span>{{ '%0.2f'|format(summary.total_http_ms) }} ms</span>
+                </div>
+            {% endif %}
+        {% endset %}
+
+        {{ include(
+            '@WebProfiler/Profiler/toolbar_item.html.twig',
+            { link: profiler_url, status: status_color }
+        ) }}
+    {% endif %}
+{% endblock %}
+
+{% block menu %}
+    {% set summary = collector.summary %}
+    {% set opp_count = summary.opportunity_count|default(0) %}
+    {% if summary.high_impact_count|default(0) > 0 %}
+        {% set status_class = 'label-status-error' %}
+    {% elseif opp_count > 0 %}
+        {% set status_class = 'label-status-warning' %}
+    {% else %}
+        {% set status_class = '' %}
+    {% endif %}
+    <span class="label
+        {{- opp_count == 0 ? ' disabled' }}
+        {{- status_class ? ' ' ~ status_class }}">
+        <span class="icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                 viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="1.5" stroke-linecap="round"
+                 stroke-linejoin="round">
+                <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+                <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0"/>
+                <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0"/>
+                <path d="M13.41 10.59l2.59 -2.59"/>
+                <path d="M7 12a5 5 0 0 1 5 -5"/>
+            </svg>
+        </span>
+        <strong>Optimize</strong>
+        {% if opp_count > 0 %}
+            <span class="count">
+                <span>{{ opp_count }}</span>
+            </span>
+        {% endif %}
+    </span>
+{% endblock %}
+
+{% block panel %}
+    {% set summary = collector.summary %}
+    {% set opp_count = summary.opportunity_count|default(0) %}
+    {% set db = collector.dbSignals %}
+    {% set cache = collector.cacheSignals %}
+    {% set tw = collector.twigSignals %}
+    {% set ev = collector.eventSignals %}
+    {% set perf = collector.performanceSignals %}
+    {% set http = collector.httpSignals %}
+    {% set other = collector.otherSignals %}
+
+    <h2>Optimization Insights</h2>
+
+    <div class="metrics oa-kpi-row">
+        <div class="metric-group">
+            <div class="metric">
+                <span class="value">{{ opp_count }}</span>
+                <span class="label">Opportunities</span>
+            </div>
+            <div class="metric">
+                <span class="value">
+                    {{- summary.quick_win_count|default(0) -}}
+                </span>
+                <span class="label">Quick Wins</span>
+            </div>
+            <div class="metric">
+                <span class="value">
+                    {{- summary.high_impact_count|default(0) -}}
+                </span>
+                <span class="label">High Impact</span>
+            </div>
+            <div class="metric">
+                {% set hs = summary.optimization_score|default(100) %}
+                <span class="value"
+                      style="color: {{ hs >= 80 ? 'var(--color-success)'
+                          : (hs >= 50 ? 'var(--yellow-500, #eab308)'
+                          : 'var(--color-error)') }}">
+                    {{ hs }} <span class="unit">%</span>
+                </span>
+                <span class="label">Optimization</span>
+            </div>
+        </div>
+        <div class="metric-divider"></div>
+        <div class="metric-group">
+            <div class="metric">
+                <span class="value">
+                    {{ '%0.2f'|format(summary.total_db_ms|default(0)) }} <span class="unit">ms</span>
+                </span>
+                <span class="label">DB</span>
+            </div>
+            <div class="metric">
+                <span class="value">
+                    {{ '%0.2f'|format(summary.total_twig_ms|default(0)) }} <span class="unit">ms</span>
+                </span>
+                <span class="label">Twig</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="sf-tabs">
+
+        {# ================================================================ #}
+        {# Tab 1: Overview                                                  #}
+        {# ================================================================ #}
+        <div class="tab">
+            <h3 class="tab-title">Overview</h3>
+            <div class="tab-content">
+
+                {# --- Time Breakdown Bar --- #}
+                {% set t_db = summary.total_db_ms|default(0) %}
+                {% set t_twig = summary.total_twig_ms|default(0) %}
+                {% set t_http = summary.total_http_ms|default(0) %}
+                {% set t_msg = summary.total_messenger_ms|default(0) %}
+                {% set t_total = t_db + t_twig + t_http + t_msg %}
+                {% if t_total > 0 %}
+                    <div class="oa-section">
+                        <h3 class="oa-section-title">
+                            Time Breakdown
+                        </h3>
+                        <div class="oa-time-bar">
+                            {% if t_db > 0 %}
+                                <div class="oa-time-bar-segment oa-seg-db"
+                                     style="width:{{ (t_db / t_total * 100)|round(1) }}%"
+                                     title="DB: {{ '%0.1f'|format(t_db) }} ms">
+                                    {% if t_db / t_total > 0.08 %}
+                                        {{ '%0.0f'|format(t_db / t_total * 100) }}%
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                            {% if t_twig > 0 %}
+                                <div class="oa-time-bar-segment oa-seg-twig"
+                                     style="width:{{ (t_twig / t_total * 100)|round(1) }}%"
+                                     title="Twig: {{ '%0.1f'|format(t_twig) }} ms">
+                                    {% if t_twig / t_total > 0.08 %}
+                                        {{ '%0.0f'|format(t_twig / t_total * 100) }}%
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                            {% if t_http > 0 %}
+                                <div class="oa-time-bar-segment oa-seg-http"
+                                     style="width:{{ (t_http / t_total * 100)|round(1) }}%"
+                                     title="HTTP: {{ '%0.1f'|format(t_http) }} ms">
+                                    {% if t_http / t_total > 0.08 %}
+                                        {{ '%0.0f'|format(t_http / t_total * 100) }}%
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                            {% if t_msg > 0 %}
+                                <div class="oa-time-bar-segment oa-seg-messenger"
+                                     style="width:{{ (t_msg / t_total * 100)|round(1) }}%"
+                                     title="Messenger: {{ '%0.1f'|format(t_msg) }} ms">
+                                    {% if t_msg / t_total > 0.08 %}
+                                        {{ '%0.0f'|format(t_msg / t_total * 100) }}%
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="oa-time-bar-legend">
+                            {% if t_db > 0 %}
+                                <span class="oa-legend-db">
+                                    DB {{ '%0.1f'|format(t_db) }} ms
+                                </span>
+                            {% endif %}
+                            {% if t_twig > 0 %}
+                                <span class="oa-legend-twig">
+                                    Twig {{ '%0.1f'|format(t_twig) }} ms
+                                </span>
+                            {% endif %}
+                            {% if t_http > 0 %}
+                                <span class="oa-legend-http">
+                                    HTTP {{ '%0.1f'|format(t_http) }} ms
+                                </span>
+                            {% endif %}
+                            {% if t_msg > 0 %}
+                                <span class="oa-legend-messenger">
+                                    Messenger {{ '%0.1f'|format(t_msg) }} ms
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                {# --- Top Opportunities --- #}
+                {% set top = collector.topOpportunities %}
+                {% if top|length > 0 %}
+                    <div class="oa-section">
+                        <h3 class="oa-section-title">
+                            Top Opportunities
+                        </h3>
+                        {% for opp in top %}
+                            <div class="oa-card">
+                                <div class="oa-card-header">
+                                    {% if opp.roi|default(0) >= 4 %}
+                                        {% set roi_class = 'badge-success' %}
+                                    {% elseif opp.roi|default(0) >= 2 %}
+                                        {% set roi_class = 'badge-warning' %}
+                                    {% else %}
+                                        {% set roi_class = '' %}
+                                    {% endif %}
+                                    <span class="badge {{ roi_class }}">
+                                        ROI {{ '%0.1f'|format(opp.roi|default(0)) }}
+                                    </span>
+                                    <span class="oa-card-title">
+                                        {{ opp.title|default('') }}
+                                    </span>
+                                    <span class="badge">
+                                        {{ opp.category|default('') }}
+                                    </span>
+                                </div>
+                                <p class="oa-card-why">
+                                    {{ opp.why|default('') }}
+                                </p>
+                                {% set actions = opp.recommended_actions
+                                    |default([]) %}
+                                {% set safety = opp.safety_notes
+                                    |default('') %}
+                                {% if actions|length > 0 or safety %}
+                                    <div class="sf-toggle"
+                                         data-toggle-selector="#oa-top-{{ loop.index }}"
+                                         data-toggle-initial="display-none">
+                                        <span class="oa-expand-toggle">
+                                            Details
+                                        </span>
+                                    </div>
+                                    <div id="oa-top-{{ loop.index }}"
+                                         class="oa-card-detail">
+                                        {% if actions|length > 0 %}
+                                            <strong>Actions:</strong>
+                                            <ul>
+                                                {% for action in actions %}
+                                                    <li>{{ action }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                        {% endif %}
+                                        {% if safety %}
+                                            <p class="oa-safety">
+                                                {{ safety }}
+                                            </p>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {# --- Quick Wins --- #}
+                {% set qw = collector.quickWins %}
+                {% if qw|length > 0 %}
+                    <div class="oa-section">
+                        <h3 class="oa-section-title">Quick Wins</h3>
+                        <table class="oa-qw-table">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Count</th>
+                                    <th>Category</th>
+                                    <th>ROI</th>
+                                    <th>Expected Gain</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for opp in qw %}
+                                    <tr>
+                                        <td>{{ opp.title|default('') }}</td>
+                                        <td>{{ opp.occurrence_count|default(1) }}×</td>
+                                        <td>
+                                            <span class="badge">
+                                                {{ opp.category|default('') }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if opp.roi|default(0) >= 4 %}
+                                                {% set rc = 'badge-success' %}
+                                            {% elseif opp.roi|default(0) >= 2 %}
+                                                {% set rc = 'badge-warning' %}
+                                            {% else %}
+                                                {% set rc = '' %}
+                                            {% endif %}
+                                            <span class="badge {{ rc }}">
+                                                {{ '%0.1f'|format(opp.roi|default(0)) }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {{ opp.expected_gain|default('-') }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+
+                {# --- Risky Changes --- #}
+                {% set risky = collector.riskyChanges %}
+                {% if risky|length > 0 %}
+                    <div class="oa-section">
+                        <h3 class="oa-section-title">
+                            Risky Changes
+                        </h3>
+                        <table class="oa-risky-table">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th>Risk</th>
+                                    <th>Impact</th>
+                                    <th>Safety Notes</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for opp in risky %}
+                                    <tr>
+                                        <td>{{ opp.title|default('') }}</td>
+                                        <td>
+                                            <span class="badge badge-danger">
+                                                {{ opp.risk|default('high') }}
+                                            </span>
+                                        </td>
+                                        <td>{{ opp.impact|default('-') }}</td>
+                                        <td>
+                                            {{ opp.safety_notes|default('-') }}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+
+                {% if top|length == 0 and qw|length == 0
+                    and risky|length == 0 %}
+                    <div class="empty">
+                        <p>No optimization opportunities detected.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {# ================================================================ #}
+        {# Tab 2: Opportunities                                             #}
+        {# ================================================================ #}
+        <div class="tab {{ opp_count == 0 ? 'disabled' }}">
+            <h3 class="tab-title">
+                Opportunities
+                <span class="badge">{{ opp_count }}</span>
+            </h3>
+            <div class="tab-content">
+                {% set opps = collector.opportunities %}
+                {% if opps|length == 0 %}
+                    <div class="empty">
+                        <p>No opportunities detected.</p>
+                    </div>
+                {% else %}
+                    <table class="oa-opps-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>ROI</th>
+                                <th>Title</th>
+                                <th>Category</th>
+                                <th>Impact</th>
+                                <th>Effort</th>
+                                <th>Conf.</th>
+                                <th>Risk</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for opp in opps %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>
+                                        {% if opp.roi|default(0) >= 4 %}
+                                            {% set rc = 'badge-success' %}
+                                        {% elseif opp.roi|default(0) >= 2 %}
+                                            {% set rc = 'badge-warning' %}
+                                        {% else %}
+                                            {% set rc = '' %}
+                                        {% endif %}
+                                        <span class="badge {{ rc }}">
+                                            {{ '%0.1f'|format(opp.roi|default(0)) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button type="button"
+                                                class="btn btn-link sf-toggle"
+                                                data-toggle-selector="#oa-opp-{{ loop.index }}">
+                                            {{ opp.title|default('') }}
+                                        </button>
+                                        {% if opp.expected_gain|default('') %}
+                                            <span class="text-muted">{{ opp.expected_gain }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge">
+                                            {{ opp.category|default('') }}
+                                        </span>
+                                    </td>
+                                    <td>{{ opp.impact|default('-') }}</td>
+                                    <td>{{ opp.effort|default('-') }}</td>
+                                    <td>{{ opp.confidence|default('-') }}</td>
+                                    <td>{{ opp.risk|default('-') }}</td>
+                                </tr>
+                                <tr id="oa-opp-{{ loop.index }}"
+                                    class="sf-toggle-content sf-toggle-hidden">
+                                    <td colspan="8">
+                                        <table>
+                                            <tbody>
+                                                {% if opp.why|default('') %}
+                                                    <tr>
+                                                        <th scope="row" class="font-normal">Why</th>
+                                                        <td>{{ opp.why }}</td>
+                                                    </tr>
+                                                {% endif %}
+                                                {% set refs = opp.evidence_refs|default([]) %}
+                                                {% if refs|length > 0 %}
+                                                    <tr>
+                                                        <th scope="row" class="font-normal">Evidence</th>
+                                                        <td>
+                                                            <div class="oa-export-block">
+                                                                <pre class="oa-export-pre"><code>{{ refs|join(', ') }}</code></pre>
+                                                                <button class="btn btn-sm hidden" data-clipboard-source>Copy</button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                {% endif %}
+                                                {% set acts = opp.recommended_actions|default([]) %}
+                                                {% if acts|length > 0 %}
+                                                    <tr>
+                                                        <th scope="row" class="font-normal">Actions</th>
+                                                        <td>
+                                                            <ul>
+                                                                {% for a in acts %}
+                                                                    <li>{{ a }}</li>
+                                                                {% endfor %}
+                                                            </ul>
+                                                        </td>
+                                                    </tr>
+                                                {% endif %}
+                                                {% if opp.safety_notes|default('') %}
+                                                    <tr>
+                                                        <th scope="row" class="font-normal">Safety</th>
+                                                        <td class="text-muted"><em>{{ opp.safety_notes }}</em></td>
+                                                    </tr>
+                                                {% endif %}
+                                                {% if opp.ai_prompt|default('') %}
+                                                    <tr>
+                                                        <th scope="row" class="font-normal">AI Prompt</th>
+                                                        <td>
+                                                            <div class="oa-export-block">
+                                                                <pre class="oa-export-pre"><code>{{ opp.ai_prompt }}</code></pre>
+                                                                <button class="btn btn-sm hidden" data-clipboard-source>Copy</button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                {% endif %}
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                {% endif %}
+            </div>
+        </div>
+
+        {# ================================================================ #}
+        {# Tab 3: Database                                                  #}
+        {# ================================================================ #}
+        <div class="tab {{ not db._available|default(true) or db.app_queries|default(0) == 0 ? 'disabled' }}">
+            <h3 class="tab-title">
+                Database
+                <span class="badge">{{ db.app_queries|default(0) }}</span>
+            </h3>
+            <div class="tab-content">
+                {% if not db._available|default(true) %}
+                    <div class="empty">
+                        <p>Database analysis is not available.</p>
+                        <p class="text-muted">Run <code>composer require symfony/doctrine-bridge</code> to enable database query profiling.</p>
+                    </div>
+                {% else %}
+                {% set groups = db.query_groups|default([]) %}
+                {% if groups|length == 0 %}
+                    <div class="empty">
+                        <p>No database queries collected.</p>
+                    </div>
+                {% else %}
+                    {% set app_groups = groups|filter(g => g.origin|default('app') == 'app') %}
+                    {% set infra_groups = groups|filter(g => g.origin|default('app') == 'infra') %}
+
+                    {% set d_total = db.app_queries|default(0) %}
+                    {% set d_ms = db.app_db_ms|default(0) %}
+                    {% set d_avg = d_total > 0
+                        ? d_ms / d_total : 0 %}
+                    {% set d_slowest = app_groups|length > 0
+                        ? app_groups|first.total_ms|default(0) : 0 %}
+
+                    <div class="metrics">
+                        <div class="metric-group">
+                            <div class="metric">
+                                <span class="value">{{ d_total }}</span>
+                                <span class="label">Queries</span>
+                            </div>
+                            <div class="metric">
+                                <span class="value"
+                                      style="color: {{ d_ms >= 100
+                                          ? 'var(--color-error)'
+                                          : (d_ms >= 30
+                                              ? 'var(--yellow-500, #eab308)'
+                                              : 'var(--color-success)') }}">
+                                    {{ '%0.2f'|format(d_ms) }} <span class="unit">ms</span>
+                                </span>
+                                <span class="label">Total</span>
+                            </div>
+                            <div class="metric">
+                                <span class="value">
+                                    {{- db.app_patterns|default(
+                                        app_groups|length
+                                    ) -}}
+                                </span>
+                                <span class="label">Patterns</span>
+                            </div>
+                            <div class="metric">
+                                <span class="value">
+                                    {{- db.connections|default(0) -}}
+                                </span>
+                                <span class="label">Connections</span>
+                            </div>
+                        </div>
+                        <div class="metric-divider"></div>
+                        <div class="metric-group">
+                            <div class="metric">
+                                <span class="value"
+                                      style="color: {{ d_avg >= 5
+                                          ? 'var(--color-error)'
+                                          : (d_avg >= 1
+                                              ? 'var(--yellow-500, #eab308)'
+                                              : 'var(--color-success)') }}">
+                                    {{ '%0.2f'|format(d_avg) }} <span class="unit">ms</span>
+                                </span>
+                                <span class="label">Avg / query</span>
+                            </div>
+                            <div class="metric">
+                                <span class="value"
+                                      style="color: {{ d_slowest >= 50
+                                          ? 'var(--color-error)'
+                                          : (d_slowest >= 10
+                                              ? 'var(--yellow-500, #eab308)'
+                                              : 'var(--color-success)') }}">
+                                    {{ '%0.2f'|format(d_slowest) }} <span class="unit">ms</span>
+                                </span>
+                                <span class="label">Slowest group</span>
+                            </div>
+                        </div>
+                        <div class="metric-divider"></div>
+                        <div class="metric-group">
+                            <div class="metric">
+                                <span class="value">
+                                    {{- db.select_count|default(0) -}}
+                                </span>
+                                <span class="label">SELECT</span>
+                            </div>
+                            <div class="metric">
+                                <span class="value">
+                                    {{- db.insert_count|default(0) -}}
+                                </span>
+                                <span class="label">INSERT</span>
+                            </div>
+                            <div class="metric">
+                                <span class="value">
+                                    {{- db.update_count|default(0) -}}
+                                </span>
+                                <span class="label">UPDATE</span>
+                            </div>
+                            <div class="metric">
+                                <span class="value">
+                                    {{- db.delete_count|default(0) -}}
+                                </span>
+                                <span class="label">DELETE</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if db.infra_queries|default(0) > 0 %}
+                        <p style="font-size:12px;color:var(--color-muted);margin-top:4px">
+                            {{ db.infra_queries }} infrastructure queries ({{ '%0.2f'|format(db.infra_db_ms|default(0)) }} ms) excluded
+                        </p>
+                    {% endif %}
+
+                    <table class="oa-db-table">
+                        <thead>
+                            <tr>
+                                <th>Connection</th>
+                                <th>Kind</th>
+                                <th>Count</th>
+                                <th>Total</th>
+                                <th>Max</th>
+                                <th>Avg</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for g in app_groups %}
+                                {% set is_suspect = (g.count|default(0) >= 10)
+                                    or (g.total_ms|default(0) >= 30) %}
+                                <tr class="oa-data-row {{ is_suspect ? 'oa-highlight-row' }}">
+                                    <td>
+                                        <span class="oa-conn-badge {{ g.connection|default('default') == 'default' ? 'oa-conn-default' : 'oa-conn-alt' }}">{{ g.connection|default('-') }}</span>
+                                    </td>
+                                    <td>{{ g.kind|default('-') }}</td>
+                                    <td>{{ g.count|default(0) }}</td>
+                                    <td>
+                                        {{ '%0.2f'|format(
+                                            g.total_ms|default(0)
+                                        ) }} ms
+                                    </td>
+                                    <td>
+                                        {{ '%0.2f'|format(
+                                            g.max_ms|default(0)
+                                        ) }} ms
+                                    </td>
+                                    <td>
+                                        {{ '%0.2f'|format(
+                                            g.avg_ms|default(0)
+                                        ) }} ms
+                                    </td>
+                                </tr>
+                                {% set tbls = g.tables|default('') is iterable
+                                    ? g.tables
+                                    : (g.tables|default('') ? [g.tables] : []) %}
+                                <tr class="oa-detail-row {{ is_suspect ? 'oa-highlight-row' }}">
+                                    <td colspan="6" class="oa-sql-detail-cell">
+                                        <div class="oa-example-sql" style="margin-bottom:4px">{{ g.example_sql|default(g.pattern|default(''))|oi_prettify_sql }}</div>
+
+                                        {% if g.example_params is defined and g.example_params is not null %}
+                                            <div style="margin-bottom:4px">
+                                                <strong class="font-normal text-small">Parameters</strong>: {{ profiler_dump(g.example_params, 2) }}
+                                            </div>
+                                        {% endif %}
+
+                                        <div class="oa-sql-toggles">
+                                            <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#oa-app-fmt-{{ loop.index }}" data-toggle-alt-content="Hide formatted query">View formatted query</a>
+                                            {% if g.runnable|default(false) %}
+                                                <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#oa-app-raw-{{ loop.index }}" data-toggle-alt-content="Hide runnable query">View runnable query</a>
+                                            {% endif %}
+                                            {% if tbls|length > 0 %}
+                                                <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#oa-app-tbl-{{ loop.index }}" data-toggle-alt-content="Hide table list">View table list</a>
+                                            {% endif %}
+                                        </div>
+
+                                        <div id="oa-app-fmt-{{ loop.index }}" class="oa-code-block hidden">
+                                            {{ g.example_sql|default(g.pattern|default(''))|oi_format_sql(highlight=true) }}
+                                            <button class="btn btn-sm hidden" data-clipboard-text="{{ g.example_sql|default(g.pattern|default(''))|oi_format_sql(highlight=false)|e('html_attr') }}">Copy</button>
+                                        </div>
+
+                                        {% if g.runnable|default(false) %}
+                                            <div id="oa-app-raw-{{ loop.index }}" class="oa-code-block hidden">
+                                                {% set runnable_sql = (g.example_sql|default('') ~ ';')|oi_replace_query_params(g.example_params) %}
+                                                {{ runnable_sql|oi_prettify_sql }}
+                                                <button class="btn btn-sm hidden" data-clipboard-text="{{ runnable_sql|e('html_attr') }}">Copy</button>
+                                            </div>
+                                        {% endif %}
+
+                                        {% if tbls|length > 0 %}
+                                            <div id="oa-app-tbl-{{ loop.index }}" class="oa-code-block hidden">
+                                                <code>{{ tbls|join(', ') }}</code>
+                                                <button class="btn btn-sm hidden" data-clipboard-text="{{ tbls|join(', ')|e('html_attr') }}">Copy</button>
+                                            </div>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    {% if infra_groups|length > 0 %}
+                        <div class="oa-section" style="margin-top:16px">
+                            <div class="sf-toggle"
+                                 data-toggle-selector="#oa-db-infra"
+                                 data-toggle-initial="display-none">
+                                <span class="oa-expand-toggle">Infrastructure Queries ({{ infra_groups|length }} patterns, {{ '%0.2f'|format(db.infra_db_ms|default(0)) }} ms)</span>
+                            </div>
+                            <div id="oa-db-infra">
+                                <p style="font-size:12px;color:var(--color-muted);margin-bottom:8px">
+                                    Schema introspection, migration checks, and other framework queries.
+                                </p>
+                                <table class="oa-infra-table oa-db-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Connection</th>
+                                            <th>Kind</th>
+                                            <th>Count</th>
+                                            <th>Total</th>
+                                            <th>Max</th>
+                                            <th>Avg</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for g in infra_groups %}
+                                            <tr class="oa-data-row">
+                                                <td>
+                                                    <span class="oa-conn-badge {{ g.connection|default('default') == 'default' ? 'oa-conn-default' : 'oa-conn-alt' }}">{{ g.connection|default('-') }}</span>
+                                                </td>
+                                                <td>{{ g.kind|default('-') }}</td>
+                                                <td>{{ g.count|default(0) }}</td>
+                                                <td>
+                                                    {{ '%0.2f'|format(
+                                                        g.total_ms|default(0)
+                                                    ) }} ms
+                                                </td>
+                                                <td>
+                                                    {{ '%0.2f'|format(
+                                                        g.max_ms|default(0)
+                                                    ) }} ms
+                                                </td>
+                                                <td>
+                                                    {{ '%0.2f'|format(
+                                                        g.avg_ms|default(0)
+                                                    ) }} ms
+                                                </td>
+                                            </tr>
+                                            {% set tbls = g.tables|default('') is iterable
+                                                ? g.tables
+                                                : (g.tables|default('') ? [g.tables] : []) %}
+                                            <tr class="oa-detail-row">
+                                                <td colspan="6" class="oa-sql-detail-cell">
+                                                    <div class="oa-example-sql" style="margin-bottom:4px">{{ g.example_sql|default(g.pattern|default(''))|oi_prettify_sql }}</div>
+
+                                                    {% if g.example_params is defined and g.example_params is not null %}
+                                                        <div style="margin-bottom:4px">
+                                                            <strong class="font-normal text-small">Parameters</strong>: {{ profiler_dump(g.example_params, 2) }}
+                                                        </div>
+                                                    {% endif %}
+
+                                                    <div class="oa-sql-toggles">
+                                                        <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#oa-infra-fmt-{{ loop.index }}" data-toggle-alt-content="Hide formatted query">View formatted query</a>
+                                                        {% if g.runnable|default(false) %}
+                                                            <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#oa-infra-raw-{{ loop.index }}" data-toggle-alt-content="Hide runnable query">View runnable query</a>
+                                                        {% endif %}
+                                                        {% if tbls|length > 0 %}
+                                                            <a href="#" class="sf-toggle link-inverse" data-toggle-selector="#oa-infra-tbl-{{ loop.index }}" data-toggle-alt-content="Hide table list">View table list</a>
+                                                        {% endif %}
+                                                    </div>
+
+                                                    <div id="oa-infra-fmt-{{ loop.index }}" class="oa-code-block hidden">
+                                                        {{ g.example_sql|default(g.pattern|default(''))|oi_format_sql(highlight=true) }}
+                                                        <button class="btn btn-sm hidden" data-clipboard-text="{{ g.example_sql|default(g.pattern|default(''))|oi_format_sql(highlight=false)|e('html_attr') }}">Copy</button>
+                                                    </div>
+
+                                                    {% if g.runnable|default(false) %}
+                                                        <div id="oa-infra-raw-{{ loop.index }}" class="oa-code-block hidden">
+                                                            {% set runnable_sql = (g.example_sql|default('') ~ ';')|oi_replace_query_params(g.example_params) %}
+                                                            {{ runnable_sql|oi_prettify_sql }}
+                                                            <button class="btn btn-sm hidden" data-clipboard-text="{{ runnable_sql|e('html_attr') }}">Copy</button>
+                                                        </div>
+                                                    {% endif %}
+
+                                                    {% if tbls|length > 0 %}
+                                                        <div id="oa-infra-tbl-{{ loop.index }}" class="oa-code-block hidden">
+                                                            <code>{{ tbls|join(', ') }}</code>
+                                                            <button class="btn btn-sm hidden" data-clipboard-text="{{ tbls|join(', ')|e('html_attr') }}">Copy</button>
+                                                        </div>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+        {# ================================================================ #}
+        {# Tab 4: Cache                                                     #}
+        {# ================================================================ #}
+        <div class="tab {{ cache.app_cache_calls|default(0) == 0
+            ? 'disabled' }}">
+            <h3 class="tab-title">
+                Cache
+                <span class="badge">
+                    {{- cache.app_cache_calls|default(0) -}}
+                </span>
+            </h3>
+            <div class="tab-content">
+                {% set pools = cache.pools|default([]) %}
+                {% if pools|length == 0 %}
+                    <div class="empty">
+                        <p>No cache data collected.</p>
+                    </div>
+                {% else %}
+                    {% set app_pools = pools|filter(p => p.origin|default('app') == 'app') %}
+                    {% set infra_pools = pools|filter(p => p.origin|default('app') == 'infra') %}
+                    {% set profiler_pools = pools|filter(p => p.origin|default('app') == 'profiler') %}
+
+                    {% set c_hits = cache.app_hits|default(0) %}
+                    {% set c_misses = cache.app_misses|default(0) %}
+                    {% set c_reads = cache.app_reads|default(0) %}
+                    {% set c_writes = cache.app_writes|default(0) %}
+                    {% set c_deletes = cache.app_deletes|default(0) %}
+                    {% set c_hr = cache.global_hit_rate|default(null) %}
+
+                    <div class="metrics">
+                        <div class="metric-group">
+                            {% if c_hr is not null %}
+                                <div class="metric">
+                                    <span class="value"
+                                          style="color: {{ c_hr >= 80 ? 'var(--color-success)'
+                                              : (c_hr >= 50 ? 'var(--yellow-500, #eab308)'
+                                              : 'var(--color-error)') }}">
+                                        {{- '%0.1f'|format(c_hr) }}%
+                                    </span>
+                                    <span class="label">Hit Rate</span>
+                                </div>
+                            {% endif %}
+                            <div class="metric">
+                                <span class="value">
+                                    {{- cache.app_cache_calls|default(0) -}}
+                                </span>
+                                <span class="label">Total Calls</span>
+                            </div>
+                            <div class="metric">
+                                <span class="value"
+                                      style="color: var(--color-success)">
+                                    {{- c_hits -}}
+                                </span>
+                                <span class="label">Hits</span>
+                            </div>
+                            <div class="metric">
+                                <span class="value"
+                                      style="color: {{ c_misses > c_hits
+                                          ? 'var(--color-error)'
+                                          : 'inherit' }}">
+                                    {{- c_misses -}}
+                                </span>
+                                <span class="label">Misses</span>
+                            </div>
+                        </div>
+                        <div class="metric-divider"></div>
+                        <div class="metric-group">
+                            <div class="metric">
+                                <span class="value">{{ c_reads }}</span>
+                                <span class="label">Reads</span>
+                            </div>
+                            <div class="metric">
+                                <span class="value">{{ c_writes }}</span>
+                                <span class="label">Writes</span>
+                            </div>
+                            <div class="metric">
+                                <span class="value">{{ c_deletes }}</span>
+                                <span class="label">Deletes</span>
+                            </div>
+                        </div>
+                        <div class="metric-divider"></div>
+                        <div class="metric-group">
+                            <div class="metric">
+                                <span class="value">
+                                    {{ '%0.2f'|format(
+                                        cache.app_cache_ms|default(0)
+                                    ) }} <span class="unit">ms</span>
+                                </span>
+                                <span class="label">Total</span>
+                            </div>
+                            <div class="metric">
+                                <span class="value">
+                                    {{- app_pools|length -}}
+                                </span>
+                                <span class="label">Pools</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if cache.infra_cache_calls|default(0) > 0 or cache.profiler_cache_calls|default(0) > 0 %}
+                        <p style="font-size:12px;color:var(--color-muted);margin-top:4px">
+                            {% if cache.infra_cache_calls|default(0) > 0 %}
+                                {{ cache.infra_cache_calls }} infrastructure cache calls ({{ '%0.2f'|format(cache.infra_cache_ms|default(0)) }} ms)
+                            {% endif %}
+                            {% if cache.infra_cache_calls|default(0) > 0 and cache.profiler_cache_calls|default(0) > 0 %} + {% endif %}
+                            {% if cache.profiler_cache_calls|default(0) > 0 %}
+                                {{ cache.profiler_cache_calls }} profiler cache calls ({{ '%0.2f'|format(cache.profiler_cache_ms|default(0)) }} ms)
+                            {% endif %}
+                            excluded from totals
+                        </p>
+                    {% endif %}
+
+                    <table class="oa-cache-table">
+                        <thead>
+                            <tr>
+                                <th>Pool</th>
+                                <th>Reads</th>
+                                <th>Writes</th>
+                                <th>Deletes</th>
+                                <th>Hits</th>
+                                <th>Misses</th>
+                                <th>Hit Rate</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for p in app_pools %}
+                                {% set low_hit = p.hit_rate|default(100)
+                                    < 50 %}
+                                <tr class="{{ low_hit
+                                    ? 'oa-highlight-row' }}">
+                                    <td>{{ p.pool|default('-') }}</td>
+                                    <td>{{ p.reads|default(0) }}</td>
+                                    <td>{{ p.writes|default(0) }}</td>
+                                    <td>{{ p.deletes|default(0) }}</td>
+                                    <td>{{ p.hits|default(0) }}</td>
+                                    <td>{{ p.misses|default(0) }}</td>
+                                    <td>
+                                        {% if p.hit_rate|default(null)
+                                            is not null %}
+                                            <span style="color: {{ p.hit_rate >= 80
+                                                ? 'var(--color-success)'
+                                                : (p.hit_rate >= 50
+                                                    ? 'var(--yellow-500, #eab308)'
+                                                    : 'var(--color-error)') }}">
+                                                {{ '%0.1f'|format(
+                                                    p.hit_rate
+                                                ) }}%
+                                            </span>
+                                        {% else %}
+                                            <span style="color:var(--color-muted)">
+                                                n/a
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ '%0.2f'|format(
+                                            p.total_ms|default(0)
+                                        ) }} ms
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    {% if infra_pools|length > 0 %}
+                        <div class="oa-section" style="margin-top:16px">
+                            <div class="sf-toggle"
+                                 data-toggle-selector="#oa-cache-infra"
+                                 data-toggle-initial="display-none">
+                                <span class="oa-expand-toggle">Framework Cache Pools ({{ infra_pools|length }} pools, {{ '%0.2f'|format(cache.infra_cache_ms|default(0)) }} ms)</span>
+                            </div>
+                            <div id="oa-cache-infra">
+                                <p style="font-size:12px;color:var(--color-muted);margin-bottom:8px">
+                                    Framework-managed cache pools (serializer, validator, annotations, etc.).
+                                </p>
+                                <table class="oa-infra-table oa-cache-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Pool</th>
+                                            <th>Reads</th>
+                                            <th>Writes</th>
+                                            <th>Deletes</th>
+                                            <th>Hits</th>
+                                            <th>Misses</th>
+                                            <th>Hit Rate</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for p in infra_pools %}
+                                            <tr>
+                                                <td>{{ p.pool|default('-') }}</td>
+                                                <td>{{ p.reads|default(0) }}</td>
+                                                <td>{{ p.writes|default(0) }}</td>
+                                                <td>{{ p.deletes|default(0) }}</td>
+                                                <td>{{ p.hits|default(0) }}</td>
+                                                <td>{{ p.misses|default(0) }}</td>
+                                                <td>
+                                                    {% if p.hit_rate|default(null)
+                                                        is not null %}
+                                                        <span style="color: {{ p.hit_rate >= 80
+                                                            ? 'var(--color-success)'
+                                                            : (p.hit_rate >= 50
+                                                                ? 'var(--yellow-500, #eab308)'
+                                                                : 'var(--color-error)') }}">
+                                                            {{ '%0.1f'|format(
+                                                                p.hit_rate
+                                                            ) }}%
+                                                        </span>
+                                                    {% else %}
+                                                        <span style="color:var(--color-muted)">
+                                                            n/a
+                                                        </span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>
+                                                    {{ '%0.2f'|format(
+                                                        p.total_ms|default(0)
+                                                    ) }} ms
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if profiler_pools|length > 0 %}
+                        <div class="oa-section" style="margin-top:16px">
+                            <div class="sf-toggle"
+                                 data-toggle-selector="#oa-cache-profiler"
+                                 data-toggle-initial="display-none">
+                                <span class="oa-expand-toggle">Profiler Cache Pools ({{ profiler_pools|length }} pools, {{ '%0.2f'|format(cache.profiler_cache_ms|default(0)) }} ms)</span>
+                            </div>
+                            <div id="oa-cache-profiler">
+                                <p style="font-size:12px;color:var(--color-muted);margin-bottom:8px">
+                                    These metrics are generated by the Symfony Profiler itself and are not present in production.
+                                </p>
+                                <table class="oa-profiler-table oa-cache-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Pool</th>
+                                            <th>Reads</th>
+                                            <th>Writes</th>
+                                            <th>Deletes</th>
+                                            <th>Hits</th>
+                                            <th>Misses</th>
+                                            <th>Hit Rate</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for p in profiler_pools %}
+                                            <tr>
+                                                <td>{{ p.pool|default('-') }}</td>
+                                                <td>{{ p.reads|default(0) }}</td>
+                                                <td>{{ p.writes|default(0) }}</td>
+                                                <td>{{ p.deletes|default(0) }}</td>
+                                                <td>{{ p.hits|default(0) }}</td>
+                                                <td>{{ p.misses|default(0) }}</td>
+                                                <td>
+                                                    {% if p.hit_rate|default(null) is not null %}
+                                                        {{ '%0.1f'|format(p.hit_rate) }}%
+                                                    {% else %}
+                                                        <span style="color:var(--color-muted)">n/a</span>
+                                                    {% endif %}
+                                                </td>
+                                                <td>{{ '%0.2f'|format(p.total_ms|default(0)) }} ms</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+        {# ================================================================ #}
+        {# Tab 5: Twig                                                      #}
+        {# ================================================================ #}
+        <div class="tab {{ tw.app_renders|default(0) == 0
+            ? 'disabled' }}">
+            <h3 class="tab-title">
+                Twig
+                <span class="badge">
+                    {{- tw.app_renders|default(0) -}}
+                </span>
+            </h3>
+            <div class="tab-content">
+                {% set templates = tw.templates|default([]) %}
+                {% if templates|length == 0 %}
+                    <div class="empty">
+                        <p>No Twig data collected.</p>
+                    </div>
+                {% else %}
+                    {% set app_templates = templates|filter(t => t.origin|default('app') == 'app') %}
+                    {% set infra_templates = templates|filter(t => t.origin|default('app') == 'infra') %}
+                    {% set profiler_templates = templates|filter(t => t.origin|default('app') == 'profiler') %}
+
+                    {% set tw_renders = tw.app_renders|default(0) %}
+                    {% set tw_ms = tw.app_twig_ms|default(0) %}
+                    {% set tw_avg = tw_renders > 0
+                        ? tw_ms / tw_renders : 0 %}
+                    {% set tw_hottest = app_templates|length > 0
+                        ? app_templates|first.total_ms|default(0) : 0 %}
+
+                    <div class="metrics">
+                        <div class="metric-group">
+                            <div class="metric">
+                                <span class="value">{{ tw_renders }}</span>
+                                <span class="label">Renders</span>
+                            </div>
+                            <div class="metric">
+                                <span class="value"
+                                      style="color: {{ tw_ms >= 100
+                                          ? 'var(--color-error)'
+                                          : (tw_ms >= 30
+                                              ? 'var(--yellow-500, #eab308)'
+                                              : 'var(--color-success)') }}">
+                                    {{ '%0.2f'|format(tw_ms) }} <span class="unit">ms</span>
+                                </span>
+                                <span class="label">Total</span>
+                            </div>
+                            <div class="metric">
+                                <span class="value">
+                                    {{- app_templates|length -}}
+                                </span>
+                                <span class="label">Templates</span>
+                            </div>
+                        </div>
+                        <div class="metric-divider"></div>
+                        <div class="metric-group">
+                            <div class="metric">
+                                <span class="value"
+                                      style="color: {{ tw_avg >= 5
+                                          ? 'var(--color-error)'
+                                          : (tw_avg >= 1
+                                              ? 'var(--yellow-500, #eab308)'
+                                              : 'var(--color-success)') }}">
+                                    {{ '%0.2f'|format(tw_avg) }} <span class="unit">ms</span>
+                                </span>
+                                <span class="label">Avg / render</span>
+                            </div>
+                            <div class="metric">
+                                <span class="value"
+                                      style="color: {{ tw_hottest >= 50
+                                          ? 'var(--color-error)'
+                                          : (tw_hottest >= 10
+                                              ? 'var(--yellow-500, #eab308)'
+                                              : 'var(--color-success)') }}">
+                                    {{ '%0.2f'|format(tw_hottest) }} <span class="unit">ms</span>
+                                </span>
+                                <span class="label">Hottest</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if tw.infra_renders|default(0) > 0 or tw.profiler_renders|default(0) > 0 %}
+                        <p style="font-size:12px;color:var(--color-muted);margin-top:4px">
+                            {% if tw.infra_renders|default(0) > 0 %}
+                                {{ tw.infra_renders }} infrastructure template renders ({{ '%0.2f'|format(tw.infra_twig_ms|default(0)) }} ms)
+                            {% endif %}
+                            {% if tw.infra_renders|default(0) > 0 and tw.profiler_renders|default(0) > 0 %} + {% endif %}
+                            {% if tw.profiler_renders|default(0) > 0 %}
+                                {{ tw.profiler_renders }} profiler template renders ({{ '%0.2f'|format(tw.profiler_twig_ms|default(0)) }} ms)
+                            {% endif %}
+                            excluded from totals
+                        </p>
+                    {% endif %}
+
+                    <table class="oa-twig-table">
+                        <thead>
+                            <tr>
+                                <th>Template</th>
+                                <th>Renders</th>
+                                <th>Total</th>
+                                <th>Max</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for t in app_templates %}
+                                {% set is_hot = t.total_ms|default(0)
+                                    >= 50 %}
+                                {% set is_dup = t.renders|default(0)
+                                    >= 10 %}
+                                <tr class="{{ (is_hot or is_dup)
+                                    ? 'oa-highlight-row' }}">
+                                    <td title="{{ t.template|default('') }}">
+                                        {{ t.template|default('') }}
+                                    </td>
+                                    <td>{{ t.renders|default(0) }}</td>
+                                    <td>
+                                        {{ '%0.2f'|format(
+                                            t.total_ms|default(0)
+                                        ) }} ms
+                                    </td>
+                                    <td>
+                                        {{ '%0.2f'|format(
+                                            t.max_ms|default(0)
+                                        ) }} ms
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    {% if profiler_templates|length > 0 %}
+                        <div class="oa-section" style="margin-top:16px">
+                            <div class="sf-toggle"
+                                 data-toggle-selector="#oa-twig-profiler"
+                                 data-toggle-initial="display-none">
+                                <span class="oa-expand-toggle">Profiler Templates (@WebProfiler) ({{ profiler_templates|length }} templates, {{ '%0.2f'|format(tw.profiler_twig_ms|default(0)) }} ms)</span>
+                            </div>
+                            <div id="oa-twig-profiler">
+                                <p style="font-size:12px;color:var(--color-muted);margin-bottom:8px">
+                                    These metrics are generated by the Symfony Profiler itself and are not present in production.
+                                </p>
+                                <table class="oa-profiler-table oa-twig-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Template</th>
+                                            <th>Renders</th>
+                                            <th>Total</th>
+                                            <th>Max</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for t in profiler_templates %}
+                                            <tr>
+                                                <td title="{{ t.template|default('') }}">
+                                                    {{ t.template|default('') }}
+                                                </td>
+                                                <td>{{ t.renders|default(0) }}</td>
+                                                <td>
+                                                    {{ '%0.2f'|format(
+                                                        t.total_ms|default(0)
+                                                    ) }} ms
+                                                </td>
+                                                <td>
+                                                    {{ '%0.2f'|format(
+                                                        t.max_ms|default(0)
+                                                    ) }} ms
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+                {# --- Twig Call Graph --- #}
+                {% if profile is defined
+                    and profile.collectors['twig'] is defined %}
+                    {% set twig_collector = profile.collectors['twig'] %}
+                    {% if twig_collector.htmlcallgraph is defined
+                        and twig_collector.htmlcallgraph %}
+                        <div class="oa-section">
+                            <h3 class="oa-section-title">
+                                Template Call Graph
+                            </h3>
+                            <div class="sf-toggle"
+                                 data-toggle-selector="#oa-twig-callgraph"
+                                 data-toggle-initial="display-none">
+                                <span class="oa-expand-toggle">
+                                    Show call graph
+                                </span>
+                            </div>
+                            <div id="oa-twig-callgraph"
+                                 class="oa-callgraph-wrap">
+                                {{ twig_collector.htmlcallgraph|raw }}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+
+        {# ================================================================ #}
+        {# Tab 6: Performance                                               #}
+        {# ================================================================ #}
+        {% set perf_events = perf.events|default([]) %}
+        {% set perf_known_cats = ['default', 'section', 'event_listener', 'template', 'doctrine', 'messenger_middleware', 'controller', 'http_client', 'security'] %}
+        <div class="tab {{ not perf._available|default(true) or perf.event_count|default(0) == 0 ? 'disabled' }}">
+            <h3 class="tab-title">
+                Performance
+                <span class="badge">
+                    {{- perf.event_count|default(0) -}}
+                </span>
+            </h3>
+            <div class="tab-content">
+                {% if not perf._available|default(true) %}
+                    <div class="empty">
+                        <p>Performance analysis is not available.</p>
+                        <p class="text-muted">Run <code>composer require symfony/stopwatch</code> to enable Stopwatch performance profiling.</p>
+                    </div>
+                {% elseif perf_events|length == 0 %}
+                    <div class="empty">
+                        <p>No Stopwatch data collected.</p>
+                    </div>
+                {% else %}
+                    {# --- Summary Metrics --- #}
+                    <div class="metrics">
+                        <div class="metric-group">
+                            <div class="metric">
+                                <span class="value">
+                                    {{ '%0.2f'|format(perf.request_duration|default(0)) }}
+                                    <span class="unit">ms</span>
+                                </span>
+                                <span class="label">Request Duration</span>
+                            </div>
+                            <div class="metric">
+                                <span class="value">
+                                    {{- perf.event_count|default(0) -}}
+                                </span>
+                                <span class="label">Events</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {# --- Top 3 Slowest --- #}
+                    {% set top3 = perf.top_three|default([]) %}
+                    {% if top3|length > 0 %}
+                        <div class="oa-section">
+                            <h3 class="oa-section-title">
+                                Top {{ top3|length }} Slowest
+                            </h3>
+                            <table class="oa-perf-top3">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Name</th>
+                                        <th>Duration</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for entry in top3 %}
+                                        <tr>
+                                            <td>{{ loop.index }}</td>
+                                            <td>{{ entry.name }}</td>
+                                            <td>
+                                                {{ '%0.2f'|format(entry.duration) }} ms
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% endif %}
+
+                    {# --- All Events Table --- #}
+                    <div class="oa-section">
+                        <h3 class="oa-section-title">
+                            Events
+                            <span class="badge">
+                                {{- perf.event_count|default(0) -}}
+                            </span>
+                        </h3>
+                        <table class="oa-perf-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Name</th>
+                                    <th>Duration</th>
+                                    <th>Memory</th>
+                                    <th>Total</th>
+                                    <th>Start</th>
+                                    <th>Periods</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in perf_events %}
+                                    <tr class="{{ event.duration >= 100 ? 'status-error' : (event.duration >= 30 ? 'status-warning' : '') }}">
+                                        <td>{{ loop.index }}</td>
+                                        <td>
+                                            {{ event.name }}
+                                            <span class="oa-cat-badge oa-cat-{{ event.category in perf_known_cats ? event.category : 'unknown' }}" style="margin-left: 4px">
+                                                {{- event.category -}}
+                                            </span>
+                                        </td>
+                                        <td>{{ '%0.2f'|format(event.duration) }} ms</td>
+                                        <td>{{ '%0.2f'|format(event.memory / 1048576) }} MiB</td>
+                                        <td>{{ '%0.1f'|format(event.percent_of_total) }}%</td>
+                                        <td>{{ '%0.0f'|format(event.start_time) }} ms</td>
+                                        <td>{{ event.period_count }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {# ================================================================ #}
+        {# Tab 7: Events                                                    #}
+        {# ================================================================ #}
+        <div class="tab {{ ev.app_listener_calls|default(0) == 0
+            ? 'disabled' }}">
+            <h3 class="tab-title">
+                Events
+                <span class="badge">
+                    {{- ev.app_listener_calls|default(0) -}}
+                </span>
+            </h3>
+            <div class="tab-content">
+                {% set listeners = ev.listeners|default([]) %}
+                {% if listeners|length == 0 %}
+                    <div class="empty">
+                        <p>No event listener data collected.</p>
+                    </div>
+                {% else %}
+                    {% set app_listeners = listeners|filter(l => l.origin|default('app') == 'app') %}
+                    {% set infra_listeners = listeners|filter(l => l.origin|default('app') == 'infra') %}
+                    {% set profiler_listeners = listeners|filter(l => l.origin|default('app') == 'profiler') %}
+
+                    {% set ev_calls = ev.app_listener_calls
+                        |default(0) %}
+                    {% set ev_ms = ev.app_events_ms|default(0) %}
+                    {% set ev_not = ev.not_called_count|default(0) %}
+                    {% set ev_slowest = app_listeners|length > 0
+                        ? app_listeners|first.max_ms|default(0) : 0 %}
+
+                    <div class="metrics">
+                        <div class="metric-group">
+                            <div class="metric">
+                                <span class="value">{{ ev_calls }}</span>
+                                <span class="label">Calls</span>
+                            </div>
+                            <div class="metric">
+                                <span class="value"
+                                      style="color: {{ ev_ms >= 50
+                                          ? 'var(--color-error)'
+                                          : (ev_ms >= 10
+                                              ? 'var(--yellow-500, #eab308)'
+                                              : 'var(--color-success)') }}">
+                                    {{ '%0.2f'|format(ev_ms) }} <span class="unit">ms</span>
+                                </span>
+                                <span class="label">Total</span>
+                            </div>
+                            <div class="metric">
+                                <span class="value">
+                                    {{- app_listeners|length -}}
+                                </span>
+                                <span class="label">Listeners</span>
+                            </div>
+                            <div class="metric">
+                                <span class="value">
+                                    {{- ev.unique_events|default(0) -}}
+                                </span>
+                                <span class="label">Events</span>
+                            </div>
+                        </div>
+                        <div class="metric-divider"></div>
+                        <div class="metric-group">
+                            <div class="metric">
+                                <span class="value"
+                                      style="color: {{ ev_not > 0
+                                          ? 'var(--yellow-500, #eab308)'
+                                          : 'var(--color-success)' }}">
+                                    {{- ev_not -}}
+                                </span>
+                                <span class="label">Not Called</span>
+                            </div>
+                            <div class="metric">
+                                <span class="value"
+                                      style="color: {{ ev_slowest >= 10
+                                          ? 'var(--color-error)'
+                                          : (ev_slowest >= 5
+                                              ? 'var(--yellow-500, #eab308)'
+                                              : 'var(--color-success)') }}">
+                                    {{ '%0.2f'|format(ev_slowest) }} <span class="unit">ms</span>
+                                </span>
+                                <span class="label">Slowest</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if ev.infra_listener_calls|default(0) > 0 or ev.profiler_listener_calls|default(0) > 0 %}
+                        <p style="font-size:12px;color:var(--color-muted);margin-top:4px">
+                            {% if ev.infra_listener_calls|default(0) > 0 %}
+                                {{ ev.infra_listener_calls }} infrastructure listener calls ({{ '%0.2f'|format(ev.infra_events_ms|default(0)) }} ms)
+                            {% endif %}
+                            {% if ev.infra_listener_calls|default(0) > 0 and ev.profiler_listener_calls|default(0) > 0 %} + {% endif %}
+                            {% if ev.profiler_listener_calls|default(0) > 0 %}
+                                {{ ev.profiler_listener_calls }} profiler listener calls ({{ '%0.2f'|format(ev.profiler_events_ms|default(0)) }} ms)
+                            {% endif %}
+                            excluded from totals
+                        </p>
+                    {% endif %}
+
+                    <table class="oa-ev-table">
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Listener</th>
+                                <th>Calls</th>
+                                <th>Total</th>
+                                <th>Max</th>
+                                <th>Avg</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for l in app_listeners %}
+                                <tr>
+                                    <td>
+                                        {{ l.event|default('') }}
+                                    </td>
+                                    <td title="{{ l.listener_class
+                                        |default('') }}">
+                                        {{ l.listener|default(
+                                            l.listener_class|default('-')
+                                        ) }}
+                                    </td>
+                                    <td>{{ l.calls|default(0) }}</td>
+                                    <td>
+                                        {{ '%0.2f'|format(
+                                            l.total_ms|default(0)
+                                        ) }} ms
+                                    </td>
+                                    <td>
+                                        {{ '%0.2f'|format(
+                                            l.max_ms|default(0)
+                                        ) }} ms
+                                    </td>
+                                    <td>
+                                        {{ '%0.2f'|format(
+                                            l.avg_ms|default(0)
+                                        ) }} ms
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    {% if infra_listeners|length > 0 %}
+                        <div class="oa-section" style="margin-top:16px">
+                            <div class="sf-toggle"
+                                 data-toggle-selector="#oa-events-infra"
+                                 data-toggle-initial="display-none">
+                                <span class="oa-expand-toggle">Framework Event Listeners ({{ infra_listeners|length }} listeners, {{ '%0.2f'|format(ev.infra_events_ms|default(0)) }} ms)</span>
+                            </div>
+                            <div id="oa-events-infra">
+                                <p style="font-size:12px;color:var(--color-muted);margin-bottom:8px">
+                                    Symfony framework event listeners (routing, security, profiler, etc.).
+                                </p>
+                                <table class="oa-infra-table oa-ev-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Event</th>
+                                            <th>Listener</th>
+                                            <th>Calls</th>
+                                            <th>Total</th>
+                                            <th>Max</th>
+                                            <th>Avg</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for l in infra_listeners %}
+                                            <tr>
+                                                <td>
+                                                    {{ l.event|default('') }}
+                                                </td>
+                                                <td title="{{ l.listener_class
+                                                    |default('') }}">
+                                                    {{ l.listener|default(
+                                                        l.listener_class|default('-')
+                                                    ) }}
+                                                </td>
+                                                <td>{{ l.calls|default(0) }}</td>
+                                                <td>
+                                                    {{ '%0.2f'|format(
+                                                        l.total_ms|default(0)
+                                                    ) }} ms
+                                                </td>
+                                                <td>
+                                                    {{ '%0.2f'|format(
+                                                        l.max_ms|default(0)
+                                                    ) }} ms
+                                                </td>
+                                                <td>
+                                                    {{ '%0.2f'|format(
+                                                        l.avg_ms|default(0)
+                                                    ) }} ms
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if profiler_listeners|length > 0 %}
+                        <div class="oa-section" style="margin-top:16px">
+                            <div class="sf-toggle"
+                                 data-toggle-selector="#oa-events-profiler"
+                                 data-toggle-initial="display-none">
+                                <span class="oa-expand-toggle">Profiler Listeners ({{ profiler_listeners|length }} listeners, {{ '%0.2f'|format(ev.profiler_events_ms|default(0)) }} ms)</span>
+                            </div>
+                            <div id="oa-events-profiler">
+                                <p style="font-size:12px;color:var(--color-muted);margin-bottom:8px">
+                                    These metrics are generated by the Symfony Profiler itself and are not present in production.
+                                </p>
+                                <table class="oa-profiler-table oa-ev-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Event</th>
+                                            <th>Listener</th>
+                                            <th>Calls</th>
+                                            <th>Total</th>
+                                            <th>Max</th>
+                                            <th>Avg</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for l in profiler_listeners %}
+                                            <tr>
+                                                <td>{{ l.event|default('') }}</td>
+                                                <td title="{{ l.listener_class|default('') }}">
+                                                    {{ l.listener|default(l.listener_class|default('-')) }}
+                                                </td>
+                                                <td>{{ l.calls|default(0) }}</td>
+                                                <td>{{ '%0.2f'|format(l.total_ms|default(0)) }} ms</td>
+                                                <td>{{ '%0.2f'|format(l.max_ms|default(0)) }} ms</td>
+                                                <td>{{ '%0.2f'|format(l.avg_ms|default(0)) }} ms</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endif %}
+
+                {% if ev.not_called_count|default(0) > 0 %}
+                    <p class="oa-not-called">
+                        {{ ev.not_called_count }} listener(s) registered
+                        but not called during this request.
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+
+        {# ================================================================ #}
+        {# Tab 8: Other                                                     #}
+        {# ================================================================ #}
+        {% set http_calls = http.calls|default([]) %}
+        {% set sync_handlers = other.messenger.sync_handlers|default([]) %}
+        {% set app_handlers = sync_handlers|filter(h => h.origin|default('app') == 'app') %}
+        {% set infra_handlers = sync_handlers|filter(h => h.origin|default('app') == 'infra') %}
+        {% set other_badge = http.total_http_calls|default(0)
+            + other.messenger.app_sync_count|default(0) %}
+        <div class="tab {{ other_badge == 0 ? 'disabled' }}">
+            <h3 class="tab-title">
+                Other
+                <span class="badge">{{ other_badge }}</span>
+            </h3>
+            <div class="tab-content">
+                {% if not http._available|default(true) %}
+                    <div class="oa-section">
+                        <div class="empty">
+                            <p>HTTP client analysis is not available.</p>
+                            <p class="text-muted">Run <code>composer require symfony/http-client</code> to enable HTTP call profiling.</p>
+                        </div>
+                    </div>
+                {% elseif http_calls|length > 0 %}
+                    <div class="oa-section">
+                        <h3 class="oa-section-title">
+                            HTTP Endpoints
+                        </h3>
+                        <table class="oa-http-table">
+                            <thead>
+                                <tr>
+                                    <th>Endpoint</th>
+                                    <th>Method</th>
+                                    <th>Host</th>
+                                    <th>Calls</th>
+                                    <th>Total</th>
+                                    <th>Max</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for c in http_calls %}
+                                    <tr>
+                                        <td title="{{ c.endpoint_fingerprint
+                                            |default('') }}">
+                                            {{ c.path_pattern|default(
+                                                c.endpoint_fingerprint
+                                                    |default('-')
+                                            ) }}
+                                        </td>
+                                        <td>
+                                            {{ c.method|default('-') }}
+                                        </td>
+                                        <td>{{ c.host|default('-') }}</td>
+                                        <td>{{ c.calls|default(0) }}</td>
+                                        <td>
+                                            {{ '%0.2f'|format(
+                                                c.total_ms|default(0)
+                                            ) }} ms
+                                        </td>
+                                        <td>
+                                            {{ '%0.2f'|format(
+                                                c.max_ms|default(0)
+                                            ) }} ms
+                                        </td>
+                                        <td>
+                                            {% set buckets = c.status_buckets
+                                                |default({}) %}
+                                            {% if buckets['2xx']
+                                                |default(0) > 0 %}
+                                                <span style="color:var(--color-success)">
+                                                    2xx:{{ buckets['2xx'] }}
+                                                </span>
+                                            {% endif %}
+                                            {% if buckets['4xx']
+                                                |default(0) > 0 %}
+                                                <span style="color:var(--yellow-500, #eab308)">
+                                                    4xx:{{ buckets['4xx'] }}
+                                                </span>
+                                            {% endif %}
+                                            {% if buckets['5xx']
+                                                |default(0) > 0 %}
+                                                <span style="color:var(--color-error)">
+                                                    5xx:{{ buckets['5xx'] }}
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+
+                {% if app_handlers|length > 0 %}
+                    <div class="oa-section">
+                        <h3 class="oa-section-title">
+                            Messenger Sync Handlers
+                        </h3>
+                        <table class="oa-msg-table">
+                            <thead>
+                                <tr>
+                                    <th>Handler</th>
+                                    <th>Message</th>
+                                    <th>Duration</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for h in app_handlers %}
+                                    <tr>
+                                        <td title="{{ h.handler_class_full
+                                            |default('') }}">
+                                            {{ h.handler_class|default('-') }}
+                                        </td>
+                                        <td>
+                                            {{ h.message_short|default('-') }}
+                                        </td>
+                                        <td>
+                                            {{ '%0.2f'|format(
+                                                h.duration_ms|default(0)
+                                            ) }} ms
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+
+                {% if infra_handlers|length > 0 %}
+                    <div class="oa-section" style="margin-top:16px">
+                        <div class="sf-toggle"
+                             data-toggle-selector="#oa-messenger-infra"
+                             data-toggle-initial="display-none">
+                            <span class="oa-expand-toggle">Framework Handlers ({{ infra_handlers|length }} handlers, {{ '%0.2f'|format(other.messenger.infra_sync_ms|default(0)) }} ms)</span>
+                        </div>
+                        <div id="oa-messenger-infra">
+                            <p style="font-size:12px;color:var(--color-muted);margin-bottom:8px">
+                                Framework-level messenger handlers.
+                            </p>
+                            <table class="oa-infra-table oa-msg-table">
+                                <thead>
+                                    <tr>
+                                        <th>Handler</th>
+                                        <th>Message</th>
+                                        <th>Duration</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for h in infra_handlers %}
+                                        <tr>
+                                            <td title="{{ h.handler_class_full
+                                                |default('') }}">
+                                                {{ h.handler_class|default('-') }}
+                                            </td>
+                                            <td>
+                                                {{ h.message_short|default('-') }}
+                                            </td>
+                                            <td>
+                                                {{ '%0.2f'|format(
+                                                    h.duration_ms|default(0)
+                                                ) }} ms
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {% if http._available|default(true)
+                    and http_calls|length == 0
+                    and app_handlers|length == 0
+                    and infra_handlers|length == 0 %}
+                    <div class="empty">
+                        <p>No data collected.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {# ================================================================ #}
+        {# Tab 9: Export                                                    #}
+        {# ================================================================ #}
+        <div class="tab">
+            <h3 class="tab-title">Export</h3>
+            <div class="tab-content">
+                {% set origin = collector.origin %}
+                {% set opps = collector.opportunities %}
+
+                {# --- Request Context --- #}
+                <div class="oa-section">
+                    <h3 class="oa-section-title">Request Context</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Property</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th>Correlation ID</th>
+                                <td>
+                                    {{ collector.correlationId|default('-') }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Route</th>
+                                <td>{{ origin.route|default('-') }}</td>
+                            </tr>
+                            <tr>
+                                <th>Controller</th>
+                                <td>
+                                    {{ origin.controller|default('-') }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Method</th>
+                                <td>{{ origin.method|default('-') }}</td>
+                            </tr>
+                            <tr>
+                                <th>URI</th>
+                                <td>{{ origin.uri|default('-') }}</td>
+                            </tr>
+                            <tr>
+                                <th>Optimization Score</th>
+                                <td>
+                                    {{ summary.optimization_score|default(100) }}
+                                    / 100
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                {# --- AI Agent Prompt (full report) --- #}
+                {% if opps|length > 0 %}
+                    <div class="oa-section">
+                        <h3 class="oa-section-title">
+                            AI Agent Prompt
+                        </h3>
+                        <p style="font-size:13px;color:var(--color-muted);margin-bottom:8px">
+                            Copy this prompt and paste it to your AI
+                            coding agent. It will analyze and implement
+                            all optimizations.
+                        </p>
+                        <div class="oa-export-block">
+                            <pre class="oa-export-pre" id="oa-ai-export">Optimization report for route "{{ origin.route|default('unknown') }}" ({{ origin.method|default('GET') }} {{ origin.uri|default('') }}).
+Optimization score: {{ summary.optimization_score|default(100) }}/100, {{ opps|length }} opportunities detected ({{ summary.quick_win_count|default(0) }} quick wins, {{ summary.high_impact_count|default(0) }} high impact).
+DB: {{ '%0.1f'|format(summary.total_db_ms|default(0)) }} ms, Twig: {{ '%0.1f'|format(summary.total_twig_ms|default(0)) }} ms, HTTP: {{ '%0.1f'|format(summary.total_http_ms|default(0)) }} ms, Messenger: {{ '%0.1f'|format(summary.total_messenger_ms|default(0)) }} ms.
+
+Please implement the following optimizations sorted by ROI (highest first):
+{% for opp in opps %}
+{{ loop.index }}. [{{ opp.category|default('') }}] {{ opp.title|default('') }}
+   ROI: {{ '%0.1f'|format(opp.roi|default(0)) }} | Impact: {{ opp.impact|default('-') }} | Effort: {{ opp.effort|default('-') }} | Risk: {{ opp.risk|default('-') }}
+   Problem: {{ opp.why|default('') }}
+   Evidence: {{ opp.evidence_refs|default([])|join(', ') }}{% set acts = opp.recommended_actions|default([]) %}{% if acts|length > 0 %}
+
+   Approach:{% for a in acts %}
+
+   - {{ a }}{% endfor %}{% endif %}{% if opp.safety_notes|default('') %}
+
+   Safety: {{ opp.safety_notes }}{% endif %}
+
+{% endfor %}</pre>
+                            <button class="btn btn-sm hidden" data-clipboard-source>Copy</button>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {# --- Markdown Backlog Checklist --- #}
+                {% if opps|length > 0 %}
+                    <div class="oa-section">
+                        <h3 class="oa-section-title">
+                            Markdown Backlog Checklist
+                        </h3>
+                        <div class="oa-export-block">
+                            <pre class="oa-export-pre" id="oa-md-checklist">## Optimization Backlog — {{ origin.route|default('unknown') }}
+
+Route: `{{ origin.route|default('-') }}` | Optimization: {{ summary.optimization_score|default(100) }}/100 | {{ opps|length }} items
+{% for opp in opps %}
+- [ ] **[{{ opp.category|default('') }}]** {{ opp.title|default('') }} _(ROI: {{ '%0.1f'|format(opp.roi|default(0)) }}, risk: {{ opp.risk|default('-') }})_
+  - {{ opp.why|default('') }}
+  - Gain: {{ opp.expected_gain|default('?') }}{% set acts = opp.recommended_actions|default([]) %}{% for a in acts %}
+
+  - {{ a }}{% endfor %}
+
+{% endfor %}</pre>
+                            <button class="btn btn-sm hidden" data-clipboard-source>Copy</button>
+                        </div>
+                    </div>
+                {% endif %}
+
+                {# --- Full JSON Export --- #}
+                <div class="oa-section">
+                    <h3 class="oa-section-title">JSON Export</h3>
+                    <p style="font-size:13px;color:var(--color-muted);margin-bottom:8px">
+                        Complete profiling data including request
+                        context, signals, and opportunities.
+                    </p>
+                    <div class="sf-toggle"
+                         data-toggle-selector="#oa-json-export"
+                         data-toggle-initial="display-none">
+                        <span class="oa-expand-toggle">
+                            Show JSON
+                        </span>
+                    </div>
+                    <div id="oa-json-export">
+                        <div class="oa-export-block">
+                            <pre class="oa-export-pre" id="oa-json-pre">{{ {
+    origin: origin,
+    correlation_id: collector.correlationId|default('-'),
+    summary: summary,
+    opportunities: opps,
+    signals: collector.signals,
+}|json_encode(constant('JSON_PRETTY_PRINT')
+    + constant('JSON_UNESCAPED_SLASHES')
+    + constant('JSON_UNESCAPED_UNICODE')) }}</pre>
+                            <button class="btn btn-sm hidden" data-clipboard-source>Copy</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function oiCopyText(btn, text) {
+            navigator.clipboard.writeText(text);
+            var old = btn.textContent;
+            btn.textContent = '\u2705 Copied!';
+            btn.disabled = true;
+            setTimeout(function() { btn.textContent = old; btn.disabled = false; }, 7000);
+        }
+
+        if (navigator.clipboard) {
+            document.querySelectorAll('[data-clipboard-text]').forEach(function(button) {
+                button.classList.remove('hidden');
+                button.addEventListener('click', function() {
+                    oiCopyText(button, button.getAttribute('data-clipboard-text'));
+                });
+            });
+
+            document.querySelectorAll('[data-clipboard-source]').forEach(function(button) {
+                button.classList.remove('hidden');
+                button.addEventListener('click', function() {
+                    oiCopyText(button, button.previousElementSibling.textContent);
+                });
+            });
+        }
+    </script>
+{% endblock %}

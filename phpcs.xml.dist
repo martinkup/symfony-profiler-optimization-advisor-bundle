@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ruleset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/squizlabs/php_codesniffer/phpcs.xsd">
+
+    <arg name="basepath" value="."/>
+    <arg name="cache" value=".phpcs-cache"/>
+    <arg name="colors"/>
+    <arg name="extensions" value="php"/>
+    <arg name="parallel" value="12"/>
+
+    <!-- Turn off php deprecation messages, otherwise phpcbf is not working in PHPStorm -->
+    <!-- Creation of dynamic property ... is deprecated -->
+    <ini name="error_reporting" value="E_ALL~E_DEPRECATED"/>
+
+    <file>src/</file>
+    <file>tests/</file>
+
+    <!-- Ignore snake_case method names in PHPUnit tests -->
+    <rule ref="PSR1.Methods.CamelCapsMethodName">
+        <exclude-pattern>./tests/*</exclude-pattern>
+    </rule>
+
+    <!-- Ignore custom class structure in PHPUnit tests -->
+    <rule ref="SlevomatCodingStandard.Classes.ClassStructure">
+        <exclude-pattern>./tests/*</exclude-pattern>
+    </rule>
+
+    <rule ref="PSR12">
+        <!-- Line Length is managed by Slevomat Sniff -->
+        <exclude name="Generic.Files.LineLength"/>
+        <!--Temporarily disabled until fixed for PHP 8.3 -->
+        <exclude name="Generic.NamingConventions.UpperCaseConstantName.ClassConstantNotUpperCase"/>
+    </rule>
+
+    <!-- Forbidden PHP functions -->
+    <rule ref="Generic.PHP.ForbiddenFunctions">
+        <properties>
+            <property name="forbiddenFunctions" type="array">
+                <!-- Replaced PHP functions -->
+                <element key="delete" value="unset"/>
+                <element key="print" value="echo"/>
+                <element key="sizeof" value="count"/>
+                <!-- Forbidden PHP functions -->
+                <element key="assert" value="null"/>
+                <element key="create_function" value="null"/>
+                <element key="die" value="null"/>
+                <element key="exit" value="null"/>
+                <element key="eval" value="null"/>
+                <element key="is_null" value="null"/>
+                <element key="phpinfo" value="null"/>
+                <element key="print_r" value="null"/>
+                <element key="system" value="null"/>
+                <element key="var_dump" value="null"/>
+            </property>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard">
+        <exclude name="SlevomatCodingStandard.Arrays.AlphabeticallySortedByKeys.IncorrectKeyOrder"/>
+        <exclude name="SlevomatCodingStandard.Arrays.DisallowPartiallyKeyed"/>
+        <exclude name="SlevomatCodingStandard.Attributes.AttributeAndTargetSpacing"/>
+        <exclude name="SlevomatCodingStandard.Attributes.DisallowMultipleAttributesPerLine"/>
+        <exclude name="SlevomatCodingStandard.Classes.DisallowConstructorPropertyPromotion"/>
+        <exclude name="SlevomatCodingStandard.Classes.EmptyLinesAroundClassBraces.NoEmptyLineAfterOpeningBrace"/>
+        <exclude name="SlevomatCodingStandard.Classes.EmptyLinesAroundClassBraces.NoEmptyLineBeforeClosingBrace"/>
+        <exclude name="SlevomatCodingStandard.Classes.RequireAbstractOrFinal"/>
+        <exclude name="SlevomatCodingStandard.Classes.SuperfluousAbstractClassNaming"/>
+        <exclude name="SlevomatCodingStandard.Classes.SuperfluousExceptionNaming"/>
+        <exclude name="SlevomatCodingStandard.Classes.SuperfluousInterfaceNaming"/>
+        <exclude name="SlevomatCodingStandard.Classes.SuperfluousErrorNaming"/>
+        <exclude name="SlevomatCodingStandard.Classes.SuperfluousTraitNaming"/>
+        <exclude name="SlevomatCodingStandard.Commenting.DisallowOneLinePropertyDocComment"/>
+        <exclude name="SlevomatCodingStandard.Complexity.Cognitive"/>
+
+        <!-- Short ternary operator is enabled by default, disallow oposite sniff -->
+        <exclude
+                name="SlevomatCodingStandard.ControlStructures.DisallowNullSafeObjectOperator.DisallowedNullSafeObjectOperator"/>
+        <exclude name="SlevomatCodingStandard.ControlStructures.DisallowShortTernaryOperator"/>
+        <exclude name="SlevomatCodingStandard.ControlStructures.NewWithoutParentheses"/>
+        <exclude name="SlevomatCodingStandard.ControlStructures.RequireTernaryOperator"/>
+        <exclude name="SlevomatCodingStandard.ControlStructures.RequireYodaComparison.RequiredYodaComparison"/>
+        <exclude name="SlevomatCodingStandard.Files.TypeNameMatchesFileName"/>
+        <exclude name="SlevomatCodingStandard.Functions.DisallowArrowFunction"/>
+        <exclude name="SlevomatCodingStandard.Functions.DisallowNamedArguments"/>
+        <exclude name="SlevomatCodingStandard.Functions.NamedArgumentSpacing.NoWhitespaceAfterColon"/>
+        <exclude name="SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter"/>
+        <exclude name="SlevomatCodingStandard.Namespaces.FullyQualifiedClassNameInAnnotation"/>
+        <exclude name="SlevomatCodingStandard.Namespaces.FullyQualifiedExceptions"/>
+        <exclude name="SlevomatCodingStandard.Namespaces.FullyQualifiedGlobalFunctions"/>
+
+        <!-- Replaced by WebimpressCodingStandard.PHP.ImportInternalConstant.ImportFQN -->
+        <!-- Slevomat sniff version does not import constants via `use constant` -->
+        <exclude name="SlevomatCodingStandard.Namespaces.FullyQualifiedGlobalConstants.NonFullyQualified"/>
+
+        <exclude name="SlevomatCodingStandard.Namespaces.UseOnlyWhitelistedNamespaces"/>
+        <exclude name="SlevomatCodingStandard.Numbers.RequireNumericLiteralSeparator.RequiredNumericLiteralSeparator"/>
+        <exclude
+                name="SlevomatCodingStandard.Operators.DisallowIncrementAndDecrementOperators.DisallowedPostIncrementOperator"/>
+
+        <exclude name="SlevomatCodingStandard.TypeHints.DisallowMixedTypeHint"/>
+        <!-- marked as deprecated -->
+        <exclude name="SlevomatCodingStandard.TypeHints.UnionTypeHintFormat"/>
+        <!-- PHPCBF is not reliable for fixing type hints, not respecting inherited definitions (use Rector tool) -->
+        <exclude name="SlevomatCodingStandard.TypeHints.NullableTypeForNullDefaultValue" phpcbf-only="true"/>
+        <exclude name="SlevomatCodingStandard.TypeHints.ParameterTypeHint" phpcbf-only="true"/>
+        <exclude name="SlevomatCodingStandard.TypeHints.PropertyTypeHint" phpcbf-only="true"/>
+        <exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint" phpcbf-only="true"/>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Attributes.AttributesOrder">
+        <properties>
+            <property name="order" type="array">
+                <element value="ORM\Entity"/>
+                <element value="ORM\Table"/>
+                <element value="ORM\Cache"/>
+                <element value="ORM\OneToMany"/>
+                <element value="ORM\OneToOne"/>
+                <element value="ORM\ManyToOne"/>
+                <element value="ORM\ManyToMany"/>
+                <element value="ORM\JoinColumn"/>
+                <element value="ORM\OrderBy"/>
+                <element value="ORM\"/>
+                <element value="Gedmo\"/>
+                <element value="Assert\"/>
+                <element value="Route"/>
+                <element value="IsGranted"/>
+                <element value="Serializer\"/>
+            </property>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Attributes.AttributeAndTargetSpacing">
+        <properties>
+            <property name="allowOnSameLine" value="false"/>
+            <property name="linesCount" value="0"/>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Classes.BackedEnumTypeSpacing">
+        <properties>
+            <property name="spacesCountBeforeColon" value="0"/>
+            <property name="spacesCountBeforeType" value="1"/>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Classes.ConstantSpacing">
+        <properties>
+            <property name="minLinesCountBeforeWithoutComment" value="1"/>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Classes.ClassLength.ClassTooLong">
+        <type>warning</type>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Classes.ClassStructure">
+        <properties>
+            <property name="groups" type="array">
+                <element value="uses"/>
+
+                <element value="enum cases"/>
+
+                <element value="public constants"/>
+                <element value="protected constants"/>
+                <element value="private constants"/>
+
+                <element value="public properties"/>
+                <element value="static properties"/>
+                <element value="protected properties"/>
+                <element value="private properties"/>
+
+                <element value="constructor"/>
+                <element value="static constructors"/>
+                <element value="destructor"/>
+
+                <element value="magic methods"/>
+                <element value="all public methods"/>
+                <element value="all protected methods"/>
+                <element value="all private methods"/>
+            </property>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Classes.EmptyLinesAroundClassBraces">
+        <properties>
+            <property name="linesCountAfterOpeningBrace" value="0"/>
+            <property name="linesCountBeforeClosingBrace" value="0"/>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Classes.EnumCaseSpacing">
+        <properties>
+            <property name="minLinesCountBeforeWithoutComment" value="1"/>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Commenting.ForbiddenAnnotations">
+        <properties>
+            <property name="forbiddenAnnotations" type="array">
+                <element value="@author"/>
+                <element value="@created"/>
+                <element value="@copyright"/>
+                <element value="@license"/>
+                <element value="@package"/>
+                <element value="@version"/>
+            </property>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Classes.ForbiddenPublicProperty">
+        <type>warning</type>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Classes.TraitUseSpacing">
+        <properties>
+            <property name="linesCountBeforeFirstUse" value="0"/>
+            <property name="linesCountAfterLastUseWhenLastInClass" value="0"/>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Complexity.Cognitive">
+        <type>warning</type>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Commenting.DocCommentSpacing">
+        <properties>
+            <property name="linesCountBetweenAnnotationsGroups" value="1"/>
+            <property name="annotationsGroups" type="array">
+                <element value="@template"/>
+                <element value="@var, @param,"/>
+                <element value="@ORM\,"/>
+                <element value="@Assert\,"/>
+                <element value="@Route,"/>
+                <element value="@Serializer\,"/>
+                <element value="@return,"/>
+                <element value="@throws,"/>
+                <element value="@see,"/>
+                <element value="@test, @coversDefaultClass, @covers, @dataProvider, @group"/>
+                <element value="@method"/>
+                <element value="@extends, @implements"/>
+            </property>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Commenting.UselessFunctionDocComment">
+        <properties>
+            <property name="traversableTypeHints" type="array">
+                <element value="\Doctrine\Common\Collections\Collection"/>
+            </property>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.ControlStructures.BlockControlStructureSpacing">
+        <properties>
+            <property name="controlStructures" type="array">
+                <element value="do"/>
+                <element value="for"/>
+                <element value="foreach"/>
+                <element value="if"/>
+                <element value="switch"/>
+                <element value="try"/>
+                <element value="while"/>
+            </property>
+            <property name="linesCountBeforeFirst" value="0"/>
+            <property name="linesCountAfterLast" value="0"/>
+            <property name="linesCountBefore" value="1"/>
+            <property name="linesCountAfter" value="1"/>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.ControlStructures.JumpStatementsSpacing">
+        <properties>
+            <property name="linesCountBeforeWhenFirstInCaseOrDefault" value="0"/>
+            <property name="linesCountAfterWhenLastInCaseOrDefault" value="1"/>
+            <property name="linesCountAfterWhenLastInLastCaseOrDefault" value="0"/>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.ControlStructures.RequireMultiLineTernaryOperator">
+        <properties>
+            <property name="lineLengthLimit" value="120"/>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.ControlStructures.RequireSingleLineCondition">
+        <properties>
+            <property name="maxLineLength" value="120"/>
+            <property name="alwaysForSimpleConditions" value="false"/>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Files.FileLength.FileTooLong">
+        <type>warning</type>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Files.LineLength">
+        <properties>
+            <property name="lineLengthLimit" value="120"/>
+            <property name="ignoreComments" value="true"/>
+            <property name="ignoreImports" value="true"/>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Files.TypeNameMatchesFileName">
+        <properties>
+            <property name="rootNamespaces" type="array">
+                <element key="src" value="MartinKup\OptimizationAdvisorBundle"/>
+                <element key="tests" value="MartinKup\OptimizationAdvisorBundle\Tests"/>
+            </property>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Functions.DisallowTrailingCommaInCall">
+        <properties>
+            <property name="onlySingleLine" value="true"/>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Functions.DisallowTrailingCommaInClosureUse">
+        <properties>
+            <property name="onlySingleLine" value="true"/>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Functions.DisallowTrailingCommaInDeclaration">
+        <properties>
+            <property name="onlySingleLine" value="true"/>
+        </properties>
+    </rule>
+
+    <!-- Warn about long functions during programming -->
+    <rule ref="SlevomatCodingStandard.Functions.FunctionLength">
+        <type>warning</type>
+    </rule>
+
+    <!-- Enforce imports and forbid FQNs, including in PHPDoc -->
+    <rule ref="SlevomatCodingStandard.Namespaces.ReferenceUsedNamesOnly">
+        <properties>
+            <!-- Process PHPDoc/annotations as well -->
+            <property name="searchAnnotations" value="true"/>
+
+            <!-- Allow FQNs on name collisions — enforce aliasing -->
+            <property name="allowFullyQualifiedNameForCollidingClasses" value="true"/>
+            <property name="allowFullyQualifiedNameForCollidingFunctions" value="true"/>
+            <property name="allowFullyQualifiedNameForCollidingConstants" value="true"/>
+
+            <!-- Disallow FQNs from the global namespace -->
+            <property name="allowFullyQualifiedGlobalClasses" value="false"/>
+            <property name="allowFullyQualifiedGlobalFunctions" value="false"/>
+            <property name="allowFullyQualifiedGlobalConstants" value="false"/>
+
+            <!-- Disallow 'fallback' calls without import (forces `use function|const`) -->
+            <property name="allowFallbackGlobalFunctions" value="true"/>
+            <property name="allowFallbackGlobalConstants" value="true"/>
+
+            <!-- Disallow FQNs for exceptions -->
+            <property name="allowFullyQualifiedExceptions" value="false"/>
+
+            <!-- Require `use` even in files without a namespace declaration -->
+            <property name="allowWhenNoNamespace" value="false"/>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Namespaces.UnusedUses">
+        <properties>
+            <property name="searchAnnotations" value="true"/>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Namespaces.UseSpacing">
+        <properties>
+            <property name="linesCountBetweenUseTypes" value="1"/>
+        </properties>
+    </rule>
+
+    <!-- Zero spaces around equal sign match PSR-12 standard -->
+    <rule ref="SlevomatCodingStandard.TypeHints.DeclareStrictTypes">
+        <properties>
+            <property name="spacesCountAroundEqualsSign" value="0"/>
+        </properties>
+    </rule>
+
+    <!-- Type hint errors should be fixed via Rector utility -->
+    <!-- PHPCBF is not reliable during fixing missing type hints, not respecting inherited definitions -->
+    <rule ref="SlevomatCodingStandard.TypeHints.NullableTypeForNullDefaultValue" phpcs-only="true"/>
+
+    <rule ref="SlevomatCodingStandard.TypeHints.ParameterTypeHint" phpcs-only="true">
+        <exclude name="SlevomatCodingStandard.TypeHints.ParameterTypeHint.UselessAnnotation"/>
+        <properties>
+            <property name="enableObjectTypeHint" value="true"/>
+            <property name="traversableTypeHints" type="array">
+                <element value="\Doctrine\Common\Collections\Collection"/>
+            </property>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.TypeHints.PropertyTypeHint" phpcs-only="true">
+        <properties>
+            <property name="enableNativeTypeHint" value="true"/>
+            <property name="traversableTypeHints" type="array">
+                <element value="\Doctrine\Common\Collections\Collection"/>
+            </property>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.TypeHints.ReturnTypeHint" phpcs-only="true">
+        <exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint.UselessAnnotation"/>
+        <properties>
+            <property name="enableObjectTypeHint" value="true"/>
+            <property name="traversableTypeHints" type="array">
+                <element value="\Doctrine\Common\Collections\Collection"/>
+            </property>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Variables.UnusedVariable">
+        <properties>
+            <property name="ignoreUnusedValuesWhenOnlyKeysAreUsedInForeach" value="true"/>
+        </properties>
+    </rule>
+
+    <rule ref="SlevomatCodingStandard.Whitespaces.DuplicateSpaces">
+        <properties>
+            <property name="ignoreSpacesBeforeAssignment" value="true"/>
+            <property name="ignoreSpacesInAnnotation" value="true"/>
+            <property name="ignoreSpacesInComment" value="true"/>
+        </properties>
+    </rule>
+
+</ruleset>

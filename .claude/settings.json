@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "0"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(bin/console *)",
+      "Bash(composer install *)",
+      "Bash(composer require *)",
+      "Bash(composer update *)",
+      "Bash(composer check *)",
+      "Bash(composer test *)",
+      "Bash(composer cs *)",
+      "Bash(composer fix *)",
+      "Bash(composer stan *)",
+      "Bash(composer lint *)",
+      "Bash(composer audit *)",
+      "Bash(composer show *)",
+      "Bash(composer dump-autoload *)",
+      "Bash(git add *)",
+      "Bash(git branch *)",
+      "Bash(git checkout *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git mv *)",
+      "Bash(git show *)",
+      "Bash(git stash *)",
+      "Bash(git status)",
+      "Bash(git status *)",
+      "Edit(./**)",
+      "Read(./**)",
+      "WebFetch(domain:doctrine-project.org)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:packagist.org)",
+      "WebFetch(domain:php.net)",
+      "WebFetch(domain:symfony.com)",
+      "WebFetch(domain:twig.symfony.com)",
+      "WebSearch",
+      "Write(./**)",
+      "mcp__ide__*",
+      "mcp__jetbrains__*",
+      "mcp__symfony_ai_mate__*"
+    ],
+    "deny": [
+      "Bash(git push --force *)",
+      "Bash(git push -f *)",
+      "Bash(git push --force-with-lease *)",
+      "Bash(git reset --hard *)",
+      "Bash(git reset --hard)",
+      "Bash(git clean -f *)",
+      "Bash(git clean -fd *)",
+      "Bash(git clean --force *)",
+      "Bash(git branch -D *)",
+      "Bash(git checkout -- *)",
+      "Bash(git add .env*)",
+      "Bash(git stash drop *)",
+      "Bash(git stash clear *)"
+    ],
+    "defaultMode": "default"
+  },
+  "enableAllProjectMcpServers": false,
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ \"$(uname)\" = \"Darwin\" ]; then osascript -e 'display notification \"SPOAB: Task complete\" with title \"Claude Code\" sound name \"Blow\"'; elif command -v notify-send >/dev/null 2>&1; then notify-send \"Claude Code\" \"SPOAB: Task complete\"; fi || true"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ \"$(uname)\" = \"Darwin\" ]; then osascript -e 'display notification \"SPOAB: Plan is ready and waiting for approval\" with title \"Claude Code\" sound name \"Blow\"'; elif command -v notify-send >/dev/null 2>&1; then notify-send \"Claude Code\" \"SPOAB: Plan is ready and waiting for approval\"; fi || true"
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "if [ \"$(uname)\" = \"Darwin\" ]; then osascript -e 'display notification \"SPOAB: Claude Code needs your attention\" with title \"Claude Code\" sound name \"Blow\"'; elif command -v notify-send >/dev/null 2>&1; then notify-send \"Claude Code\" \"SPOAB: Claude Code needs your attention\"; fi || true"
+          }
+        ]
+      }
+    ]
+  },
+  "outputStyle": "default",
+  "enabledPlugins": {
+    "skill-creator@claude-plugins-official": true
+  }
+}

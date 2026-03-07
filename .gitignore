@@ -1,0 +1,27 @@
+/bin/
+/vendor/
+/composer.lock
+/coverage/
+/MARKETING.md
+/mutagen.yml
+/mutagen.yml.lock
+/symfony.lock
+/.phpcs-cache
+
+###> symfony/framework-bundle ###
+.env*
+/config/secrets/prod/prod.decrypt.private.php
+/public/bundles/
+/var/
+###< symfony/framework-bundle ###
+
+###> phpunit/phpunit ###
+/phpunit.xml
+/.phpunit.cache/
+/.phpunit.result.cache
+###< phpunit/phpunit ###
+
+###> claude-code ###
+/.claude/settings.local.json
+/.claude/worktrees/
+###< claude-code ###

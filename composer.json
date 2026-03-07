@@ -1,0 +1,126 @@
+{
+    "name": "martinkup/symfony-profiler-optimization-advisor-bundle",
+    "type": "symfony-bundle",
+    "description": "Symfony Profiler bundle that analyzes per-request signals and produces scored, actionable optimization opportunities with ready-made AI agent prompts.",
+    "license": "MIT",
+    "keywords": [
+        "symfony",
+        "symfony-bundle",
+        "profiler",
+        "optimization",
+        "performance",
+        "debug",
+        "advisor",
+        "n-plus-one",
+        "query-optimization",
+        "doctrine",
+        "cache",
+        "twig",
+        "web-debug-toolbar",
+        "developer-tools",
+        "ai-prompts"
+    ],
+    "homepage": "https://github.com/martinkup/symfony-profiler-optimization-advisor-bundle",
+    "support": {
+        "issues": "https://github.com/martinkup/symfony-profiler-optimization-advisor-bundle/issues",
+        "source": "https://github.com/martinkup/symfony-profiler-optimization-advisor-bundle"
+    },
+    "authors": [
+        {
+            "name": "Martin Kup",
+            "homepage": "https://martinkup.dev",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=8.3",
+        "symfony/framework-bundle": "^7.2|^8.0",
+        "symfony/twig-bundle": "^7.2|^8.0"
+    },
+    "require-dev": {
+        "doctrine/dbal": "^4.0",
+        "doctrine/sql-formatter": "^1.1",
+        "php-parallel-lint/php-parallel-lint": "^1.4",
+        "phpstan/extension-installer": "^1.4",
+        "phpstan/phpstan": "^2.0",
+        "phpstan/phpstan-deprecation-rules": "^2.0",
+        "phpstan/phpstan-phpunit": "^2.0",
+        "phpstan/phpstan-strict-rules": "^2.0",
+        "phpunit/phpunit": "^12.0",
+        "roave/security-advisories": "dev-latest",
+        "slevomat/coding-standard": "^8.4",
+        "squizlabs/php_codesniffer": "^4.0",
+        "symfony/ai-symfony-mate-extension": "^0.5",
+        "symfony/cache": "^7.2|^8.0",
+        "symfony/doctrine-bridge": "^7.2|^8.0",
+        "symfony/event-dispatcher": "^7.2|^8.0",
+        "symfony/http-client": "^7.2|^8.0",
+        "symfony/messenger": "^7.2|^8.0",
+        "symfony/stopwatch": "^7.2|^8.0",
+        "symfony/web-profiler-bundle": "^7.2|^8.0"
+    },
+    "suggest": {
+        "symfony/ai-symfony-mate-extension": "Required for AI Mate MCP integration (optimization tools and collector formatter)",
+        "symfony/doctrine-bridge": "Required for Database query analysis",
+        "doctrine/sql-formatter": "Required for SQL syntax highlighting in the Database tab",
+        "symfony/http-client": "Required for HTTP client call analysis",
+        "symfony/messenger": "Required for automatic synchronous Messenger handler analysis",
+        "symfony/stopwatch": "Required for Stopwatch performance breakdown"
+    },
+    "autoload": {
+        "psr-4": {
+            "MartinKup\\OptimizationAdvisorBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "MartinKup\\OptimizationAdvisorBundle\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "cs": "bin/phpcs -n -p -s",
+        "fix": "bin/phpcbf -n -p || true",
+        "lint": "bin/parallel-lint src tests",
+        "stan": "bin/phpstan analyse --memory-limit=512M",
+        "test": "bin/phpunit",
+        "test:filter": "bin/phpunit --filter",
+        "test:unit": "bin/phpunit --group=unit",
+        "test:coverage": "php -dpcov.enabled=1 bin/phpunit --coverage-text",
+        "test:coverage-html": "php -dpcov.enabled=1 bin/phpunit --coverage-html=coverage",
+        "check": [
+            "@lint",
+            "@fix",
+            "@cs",
+            "@stan",
+            "@test"
+        ]
+    },
+    "scripts-descriptions": {
+        "cs": "Run PHP_CodeSniffer to check coding standards",
+        "fix": "Run PHP_CodeSniffer fixer to auto-fix coding standard violations",
+        "lint": "Run PHP syntax check using parallel-lint",
+        "stan": "Run PHPStan static analysis (level max)",
+        "test": "Run PHPUnit test suite",
+        "test:filter": "Run PHPUnit with filter (e.g. composer test:filter -- DatabaseAnalyzer)",
+        "test:unit": "Run only unit tests",
+        "test:coverage": "Run PHPUnit with code coverage (text output, requires pcov)",
+        "test:coverage-html": "Run PHPUnit with HTML coverage report in coverage/ directory",
+        "check": "Run all quality gates: lint → fix → cs → stan → test"
+    },
+    "config": {
+        "bin-dir": "bin",
+        "sort-packages": true,
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "phpstan/extension-installer": true
+        }
+    },
+    "extra": {
+        "ai-mate": {
+            "scan-dirs": ["src/AiMate/Capability"],
+            "includes": ["src/AiMate/config.php"]
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
