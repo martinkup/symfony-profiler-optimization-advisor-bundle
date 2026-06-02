@@ -3,7 +3,14 @@
 {% block head %}
     {{ parent() }}
     <style>
+        .metrics {
+            gap: 1em;
+        }
+        .metric-divider {
+            margin: 0;
+        }
         .oa-card {
+            background: var(--table-background);
             border: 1px solid var(--table-border-color);
             border-radius: 6px;
             padding: 12px 16px;
