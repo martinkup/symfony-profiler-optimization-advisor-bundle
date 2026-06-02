@@ -81,7 +81,7 @@
         "cs": "bin/phpcs -n -p -s",
         "fix": "bin/phpcbf -n -p || true",
         "lint": "bin/parallel-lint src tests",
-        "stan": "bin/phpstan analyse --memory-limit=512M",
+        "stan": "bin/phpstan analyse --memory-limit=2G",
         "test": "bin/phpunit",
         "test:filter": "bin/phpunit --filter",
         "test:unit": "bin/phpunit --group=unit",
@@ -112,13 +112,18 @@
         "sort-packages": true,
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true,
+            "php-http/discovery": true,
             "phpstan/extension-installer": true
         }
     },
     "extra": {
         "ai-mate": {
-            "scan-dirs": ["src/AiMate/Capability"],
-            "includes": ["src/AiMate/config.php"]
+            "scan-dirs": [
+                "src/AiMate/Capability"
+            ],
+            "includes": [
+                "src/AiMate/config.php"
+            ]
         }
     },
     "minimum-stability": "dev",
