@@ -2,9 +2,9 @@ name: CI
 
 on:
     push:
-        branches: [main]
+        branches: [ main ]
     pull_request:
-        branches: [main]
+        branches: [ main ]
 
 permissions:
     contents: read
@@ -15,30 +15,30 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v5
-              with:
-                  persist-credentials: false
+            -   uses: actions/checkout@v5
+                with:
+                    persist-credentials: false
 
-            - uses: shivammathur/setup-php@v2
-              with:
-                  php-version: '8.4'
-                  coverage: none
+            -   uses: shivammathur/setup-php@v2
+                with:
+                    php-version: '8.4'
+                    coverage: none
 
-            - name: Get Composer cache directory
-              id: composer-cache
-              run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+            -   name: Get Composer cache directory
+                id: composer-cache
+                run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
-            - uses: actions/cache@v4
-              with:
-                  path: ${{ steps.composer-cache.outputs.dir }}
-                  key: lint-${{ hashFiles('composer.json') }}
-                  restore-keys: lint-
+            -   uses: actions/cache@v4
+                with:
+                    path: ${{ steps.composer-cache.outputs.dir }}
+                    key: lint-${{ hashFiles('composer.json') }}
+                    restore-keys: lint-
 
-            - name: Install dependencies
-              run: composer update --prefer-dist --no-interaction --no-progress
+            -   name: Install dependencies
+                run: composer update --prefer-dist --no-interaction --no-progress
 
-            - name: Run PHP Lint
-              run: bin/parallel-lint src tests
+            -   name: Run PHP Lint
+                run: bin/parallel-lint src tests
 
     test:
         name: PHP ${{ matrix.php }} / Symfony ${{ matrix.symfony }} ${{ matrix.composer-flags }}
@@ -47,122 +47,135 @@ jobs:
             fail-fast: false
             matrix:
                 include:
-                    - php: '8.3'
-                      symfony: '7.2.*'
-                      composer-flags: ''
-                    - php: '8.3'
-                      symfony: '7.2.*'
-                      composer-flags: '--prefer-lowest'
-                    - php: '8.4'
-                      symfony: '7.2.*'
-                      composer-flags: ''
-                    - php: '8.4'
-                      symfony: '8.0.*'
-                      composer-flags: ''
+                    -   php: '8.3'
+                        symfony: '7.2.*'
+                        composer-flags: ''
+                    -   php: '8.3'
+                        symfony: '7.2.*'
+                        composer-flags: '--prefer-lowest'
+                    -   php: '8.4'
+                        symfony: '7.2.*'
+                        composer-flags: ''
+                    -   php: '8.4'
+                        symfony: '8.0.*'
+                        composer-flags: ''
 
         steps:
-            - uses: actions/checkout@v5
-              with:
-                  persist-credentials: false
+            -   uses: actions/checkout@v5
+                with:
+                    persist-credentials: false
 
-            - uses: shivammathur/setup-php@v2
-              with:
-                  php-version: ${{ matrix.php }}
-                  coverage: none
+            -   uses: shivammathur/setup-php@v2
+                with:
+                    php-version: ${{ matrix.php }}
+                    coverage: none
 
-            - name: Get Composer cache directory
-              id: composer-cache
-              run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+            -   name: Get Composer cache directory
+                id: composer-cache
+                run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
-            - uses: actions/cache@v4
-              with:
-                  path: ${{ steps.composer-cache.outputs.dir }}
-                  key: php-${{ matrix.php }}-sf-${{ matrix.symfony }}-${{ matrix.composer-flags }}-${{ hashFiles('composer.json') }}
-                  restore-keys: php-${{ matrix.php }}-sf-${{ matrix.symfony }}-${{ matrix.composer-flags }}-
+            -   uses: actions/cache@v4
+                with:
+                    path: ${{ steps.composer-cache.outputs.dir }}
+                    key: php-${{ matrix.php }}-sf-${{ matrix.symfony }}-${{ matrix.composer-flags }}-${{ hashFiles('composer.json') }}
+                    restore-keys: php-${{ matrix.php }}-sf-${{ matrix.symfony }}-${{ matrix.composer-flags }}-
 
-            - name: Lock Symfony version
-              run: |
-                  composer config extra.symfony.require "${{ matrix.symfony }}"
+            -   name: Lock Symfony version
+                run: |
+                    composer config extra.symfony.require "${{ matrix.symfony }}"
 
-            - name: Install dependencies
-              run: composer update --prefer-dist --no-interaction --no-progress ${{ matrix.composer-flags }}
+            -   name: Install dependencies
+                run: composer update --prefer-dist --no-interaction --no-progress ${{ matrix.composer-flags }}
 
-            - name: Run PHPUnit
-              run: bin/phpunit
+            -   name: Run PHPUnit
+                run: bin/phpunit
 
     phpcs:
         name: PHP_CodeSniffer
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v5
-              with:
-                  persist-credentials: false
+            -   uses: actions/checkout@v5
+                with:
+                    persist-credentials: false
 
-            - uses: shivammathur/setup-php@v2
-              with:
-                  php-version: '8.4'
-                  coverage: none
+            -   uses: shivammathur/setup-php@v2
+                with:
+                    php-version: '8.4'
+                    coverage: none
 
-            - name: Get Composer cache directory
-              id: composer-cache
-              run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+            -   name: Get Composer cache directory
+                id: composer-cache
+                run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
-            - uses: actions/cache@v4
-              with:
-                  path: ${{ steps.composer-cache.outputs.dir }}
-                  key: phpcs-${{ hashFiles('composer.json') }}
-                  restore-keys: phpcs-
+            -   uses: actions/cache@v4
+                with:
+                    path: ${{ steps.composer-cache.outputs.dir }}
+                    key: phpcs-${{ hashFiles('composer.json') }}
+                    restore-keys: phpcs-
 
-            - name: Install dependencies
-              run: composer update --prefer-dist --no-interaction --no-progress
+            -   name: Install dependencies
+                run: composer update --prefer-dist --no-interaction --no-progress
 
-            - name: Run PHPCS
-              run: bin/phpcs -n -p -s
+            -   name: Run PHPCS
+                run: bin/phpcs -n -p -s
 
     phpstan:
         name: PHPStan
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v5
-              with:
-                  persist-credentials: false
+            -   uses: actions/checkout@v5
+                with:
+                    persist-credentials: false
 
-            - uses: shivammathur/setup-php@v2
-              with:
-                  php-version: '8.4'
-                  coverage: none
+            -   uses: shivammathur/setup-php@v2
+                with:
+                    php-version: '8.4'
+                    coverage: none
 
-            - name: Get Composer cache directory
-              id: composer-cache
-              run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+            -   name: Get Composer cache directory
+                id: composer-cache
+                run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
-            - uses: actions/cache@v4
-              with:
-                  path: ${{ steps.composer-cache.outputs.dir }}
-                  key: phpstan-${{ hashFiles('composer.json') }}
-                  restore-keys: phpstan-
+            -   uses: actions/cache@v4
+                with:
+                    path: ${{ steps.composer-cache.outputs.dir }}
+                    key: phpstan-${{ hashFiles('composer.json') }}
+                    restore-keys: phpstan-
 
-            - name: Install dependencies
-              run: composer update --prefer-dist --no-interaction --no-progress
+            -   name: Install dependencies
+                run: composer update --prefer-dist --no-interaction --no-progress
 
-            - name: Run PHPStan
-              run: bin/phpstan analyse --memory-limit=512M
+            -   name: Run PHPStan
+                run: bin/phpstan analyse --memory-limit=2G
 
     security:
         name: Security Audit
         runs-on: ubuntu-latest
 
         steps:
-            - uses: actions/checkout@v5
-              with:
-                  persist-credentials: false
+            -   uses: actions/checkout@v5
+                with:
+                    persist-credentials: false
 
-            - uses: shivammathur/setup-php@v2
-              with:
-                  php-version: '8.4'
-                  coverage: none
+            -   uses: shivammathur/setup-php@v2
+                with:
+                    php-version: '8.4'
+                    coverage: none
 
-            - name: Security audit
-              run: composer audit
+            -   name: Get Composer cache directory
+                id: composer-cache
+                run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+            -   uses: actions/cache@v4
+                with:
+                    path: ${{ steps.composer-cache.outputs.dir }}
+                    key: security-${{ hashFiles('composer.json') }}
+                    restore-keys: security-
+
+            -   name: Install dependencies
+                run: composer update --prefer-dist --no-interaction --no-progress
+
+            -   name: Security audit
+                run: composer audit
