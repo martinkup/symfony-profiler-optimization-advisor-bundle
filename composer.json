@@ -50,7 +50,7 @@
         "roave/security-advisories": "dev-latest",
         "slevomat/coding-standard": "^8.4",
         "squizlabs/php_codesniffer": "^4.0",
-        "symfony/ai-symfony-mate-extension": "^0.5",
+        "symfony/ai-symfony-mate-extension": "^0.9",
         "symfony/cache": "^7.2|^8.0",
         "symfony/doctrine-bridge": "^7.2|^8.0",
         "symfony/event-dispatcher": "^7.2|^8.0",

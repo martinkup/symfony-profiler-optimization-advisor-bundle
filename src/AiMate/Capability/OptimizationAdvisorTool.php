@@ -75,7 +75,7 @@ final class OptimizationAdvisorTool
                 return ['error' => 'No profiler profiles found'];
             }
 
-            $token = $latest->token;
+            $token = $latest->getToken();
         }
 
         $profileData = $this->dataProvider->findProfile($token);
@@ -84,7 +84,7 @@ final class OptimizationAdvisorTool
             return ['error' => sprintf('Profile not found for token: %s', $token)];
         }
 
-        $collectors = $profileData->profile->getCollectors();
+        $collectors = $profileData->getProfile()->getCollectors();
 
         foreach ($collectors as $collector) {
             if (
